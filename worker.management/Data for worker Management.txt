@@ -1,0 +1,56 @@
+Data Input for worker:
+
+PostMapping: URL- http://localhost:8086/wastewise/admin/workers
+
+Body: 
+{
+    "name": "Jack",
+    "contactNumber": "9888888884",
+    "contactEmail": "jack4@gmail.com",
+    "roleId": "001",
+    "createdBy": "000",
+    "workerStatus": "AVAILABLE"
+}
+
+{
+    "name": "Josh",
+    "contactNumber": "9888888885",
+    "contactEmail": "josh@gmail.com",
+    "roleId": "002",
+    "createdBy": "000",
+    "workerStatus": "AVAILABLE"
+}
+
+{
+    "name": "Sam",
+    "contactNumber": "9888888886",
+    "contactEmail": "sam@gmail.com",
+    "roleId": "003",
+    "createdBy": "000",
+    "workerStatus": "AVAILABLE"
+}
+
+{
+    "name": "James",
+    "contactNumber": "9888888887",
+    "contactEmail": "james@outlook.com",
+    "roleId": "003",
+    "createdBy": "000",
+    "workerStatus": "AVAILABLE"
+}
+
+
+
+@PutMapping URL - http://localhost:8086/wastewise/admin/workers/0003
+
+Body:
+{ 
+    "name": "John",
+    "contactNumber": "9888888886",
+    "contactEmail": "johnnewemail@gmail.com",
+    "roleId": "002",
+    "workerStatus": "OCCUPIED"
+}
+
+
+WorkerAssignment
