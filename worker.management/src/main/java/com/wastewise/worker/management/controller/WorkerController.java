@@ -2,6 +2,7 @@ package com.wastewise.worker.management.controller;
 
 import com.wastewise.worker.management.dto.WorkerCreateDTO;
 import com.wastewise.worker.management.dto.WorkerDTO;
+import com.wastewise.worker.management.dto.WorkerInfoDTO;
 import com.wastewise.worker.management.dto.WorkerUpdateDTO;
 import com.wastewise.worker.management.enums.WorkerStatus;
 import com.wastewise.worker.management.service.serviceimpl.WorkerServiceImpl;
@@ -70,10 +71,10 @@ public class WorkerController {
 
     /**
      * finding all the workers with status Available
-     * @return list of workerIds with status is available
+     * @return list of workerInfoDTOs with status is available
      */
     @GetMapping("/ids/available")
-    public ResponseEntity<List<String>> getAvailableWorkerIds() {
+    public ResponseEntity<List<WorkerInfoDTO>> getAvailableWorkerIds() {
         log.info("fetching all the available workers");
         return ResponseEntity.ok(workerServiceImpl.getAllAvailableWorkerIds());
     }

@@ -1,5 +1,6 @@
 package com.wastewise.worker.management.repository;
 
+import com.wastewise.worker.management.dto.WorkerInfoDTO;
 import com.wastewise.worker.management.model.Worker;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,8 +17,13 @@ public interface WorkerRepository extends JpaRepository<Worker,String> {
     @Query("Select w.workerId from Worker w")
     List<String> findAllWorkerId();
 
-    @Query("Select w.workerId from Worker w WHERE w.workerStatus = 'available' AND w.roleId = '003'")
-    List<String> findWorkerIdAvailableStatus();
+//    @Query("Select w.workerId from Worker w WHERE w.workerStatus = 'available' AND w.roleId = '003'")
+//    List<String> findWorkerIdAvailableStatus();
+
+
+    @Query("SELECT new com.example.dto.WorkerInfo(w.id, w.name) FROM Worker w WHERE w.workerStatus = 'AVAILABLE' AND w.roleId = '003'")
+    List<WorkerInfoDTO> findAvailableWorkersByRole();
+
 
     boolean existsByContactNumber(String contactNumber);
 

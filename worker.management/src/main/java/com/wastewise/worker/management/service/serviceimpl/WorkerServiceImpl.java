@@ -2,6 +2,7 @@ package com.wastewise.worker.management.service.serviceimpl;
 
 import com.wastewise.worker.management.dto.WorkerCreateDTO;
 import com.wastewise.worker.management.dto.WorkerDTO;
+import com.wastewise.worker.management.dto.WorkerInfoDTO;
 import com.wastewise.worker.management.dto.WorkerUpdateDTO;
 import com.wastewise.worker.management.enums.WorkerStatus;
 import com.wastewise.worker.management.exception.ContactInformationUsedException;
@@ -89,7 +90,7 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
     /**
      * Retrieves all worker IDs.
      *
-     * @return list of all worker Ids
+     * @return list of all worker Ids and Names
      */
     public List<String> getWorkerIds() {
         log.info("fetching all the worker Ids");
@@ -101,9 +102,9 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
      *
      * @return list of all workers with status = "Available"
      */
-    public List<String> getAllAvailableWorkerIds() {
+    public List<WorkerInfoDTO> getAllAvailableWorkerIds() {
         log.info("fetching all the worker Ids with status 'AVAILABLE'");
-        return workerRepository.findWorkerIdAvailableStatus();
+        return workerRepository.findAvailableWorkersByRole();
     }
 
     /**
