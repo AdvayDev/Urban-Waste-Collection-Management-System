@@ -2,6 +2,7 @@ package com.wastewise.worker.management.service;
 
 import com.wastewise.worker.management.dto.WorkerCreateDTO;
 import com.wastewise.worker.management.dto.WorkerDTO;
+import com.wastewise.worker.management.dto.WorkerInfoDTO;
 import com.wastewise.worker.management.dto.WorkerUpdateDTO;
 import com.wastewise.worker.management.enums.WorkerStatus;
 
@@ -16,7 +17,7 @@ public interface WorkerService {
 
     List<String> getWorkerIds();
 
-    List<String> getAllAvailableWorkerIds();
+    List<WorkerInfoDTO> getAllAvailableWorkerIds();
 
     String updateWorker(String id, WorkerUpdateDTO dto);
 
