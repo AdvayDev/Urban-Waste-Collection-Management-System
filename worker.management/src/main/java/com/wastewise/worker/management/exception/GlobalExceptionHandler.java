@@ -64,4 +64,11 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>("Invalid input provided: "+errorMessages, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<String> handleAuthenticationFailedException(AuthenticationFailedException ex){
+        log.error("AuthenticationFailedException was thrown and handled");
+        String errorMessage = String.format("Authentication failed: %s (Status: %d)", ex.getMessage(), HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(errorMessage, HttpStatus.UNAUTHORIZED);
+    }
 }

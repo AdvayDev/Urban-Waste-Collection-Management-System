@@ -1,18 +1,18 @@
 package com.wastewise.worker.management.service.serviceimpl;
 
-import com.wastewise.worker.management.dto.WorkerCreateDTO;
-import com.wastewise.worker.management.dto.WorkerDTO;
-import com.wastewise.worker.management.dto.WorkerInfoDTO;
-import com.wastewise.worker.management.dto.WorkerUpdateDTO;
+import com.wastewise.worker.management.dto.*;
 import com.wastewise.worker.management.enums.WorkerStatus;
+import com.wastewise.worker.management.exception.AuthenticationFailedException;
 import com.wastewise.worker.management.exception.ContactInformationUsedException;
 import com.wastewise.worker.management.exception.WorkerNotFoundException;
 import com.wastewise.worker.management.mapper.WorkerMapper;
 import com.wastewise.worker.management.model.Worker;
 import com.wastewise.worker.management.repository.WorkerRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,10 +24,16 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
     private final WorkerRepository workerRepository;
     private final WorkerMapper workerMapper;
 
+    private RestTemplate restTemplate;
+
+    @Value("${auth.service.url}")
+    private String authServiceUrl;
+
     public WorkerServiceImpl(WorkerRepository workerRepository,
-                             WorkerMapper workerMapper) {
+                             WorkerMapper workerMapper, RestTemplate restTemplate) {
         this.workerRepository = workerRepository;
         this.workerMapper = workerMapper;
+        this.restTemplate = restTemplate;
     }
 
     public String generateWorkerId() {
@@ -37,7 +43,7 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
 
     /**
      * Creates a new worker in the system, takes dto of workerCreateDTO
-     *
+     * Also registers that worker to the authentication service database
      * @param dto of workerCreateDTO(name, contactNumber, contactEmail, roleId, Status)
      * @return worker creation message
      */
@@ -58,9 +64,28 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
         worker.setWorkerStatus(status);
         worker.setWorkerId(id);
         worker.setCreatedDate(LocalDateTime.now());
-        worker.setCreatedBy("000"); //To be updated using workerId in token
+        worker.setCreatedBy("W001");
         workerRepository.save(worker);
-        return "Created worker with id " + worker.getWorkerId();
+
+        // Now register in Auth-Service
+        try {
+            RegisterWorkerDTO registerDTO = new RegisterWorkerDTO();
+            registerDTO.setWorkerId(id);
+            registerDTO.setRoleName(dto.getRoleId()); // Assuming this maps directly to Role name like "Scheduler", etc.
+
+            restTemplate.postForEntity(
+                    authServiceUrl + "/auth/internal/register-worker",
+                    registerDTO,
+                    String.class
+            );
+            log.info("Successfully registered worker in auth-service with id {}", id);
+
+        } catch (Exception e) {
+            log.error("Worker created in DB but failed to register in auth-service", e);
+            throw new AuthenticationFailedException("Unable to register new worker.");
+        }
+
+        return "Created worker with id " + id;
     }
 
     /**

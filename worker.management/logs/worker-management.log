@@ -6,3 +6,11 @@
 2025-06-23 08:46:19.276 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 3 ms
 2025-06-23 08:46:19.378 [main] INFO  c.w.w.m.c.WorkerControllerTest - Started WorkerControllerTest in 8.609 seconds (process running for 13.264)
 2025-06-23 08:46:20.475 [main] INFO  c.w.w.m.controller.WorkerController - Creating a new worker profile
+2025-06-23 09:34:22.276 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.2.Final
+2025-06-23 09:34:22.354 [main] INFO  c.w.w.m.c.WorkerControllerTest - Starting WorkerControllerTest using Java 21 with PID 4820 (started by 2408482 in C:\Users\2408482\Documents\Urban Waste Collection Management System\worker.management)
+2025-06-23 09:34:22.356 [main] INFO  c.w.w.m.c.WorkerControllerTest - No active profile set, falling back to 1 default profile: "default"
+2025-06-23 09:34:25.584 [main] INFO  o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2025-06-23 09:34:25.584 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2025-06-23 09:34:25.586 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 1 ms
+2025-06-23 09:34:25.638 [main] INFO  c.w.w.m.c.WorkerControllerTest - Started WorkerControllerTest in 4.307 seconds (process running for 6.606)
+2025-06-23 09:34:26.078 [main] INFO  c.w.w.m.controller.WorkerController - Creating a new worker profile
