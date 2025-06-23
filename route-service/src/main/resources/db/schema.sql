@@ -1,0 +1,10 @@
+CREATE TABLE route (
+    route_id VARCHAR(20) PRIMARY KEY,
+    route_name VARCHAR(100) NOT NULL,
+    zone_id VARCHAR(10) NOT NULL,
+    estimated_time INT NOT NULL,
+    pickup_points TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (zone_id) REFERENCES zone(zone_id)
+);
