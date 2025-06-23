@@ -51,4 +51,5 @@ class VehicleRepositoryTest {
         assertEquals("TS02CD5678", fetched.getRegistrationNo());
     }
 }
+//new test comment
 
