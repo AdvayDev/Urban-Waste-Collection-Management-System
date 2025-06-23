@@ -32,7 +32,7 @@ public class WorkerAssignmentController {
         log.info("fetching all the workerAssignments");
         return new ResponseEntity<>(workerAssignmentServiceImpl.findAllWorkerAssignments(), HttpStatus.FOUND);
     }
-
+    
     /**
      * Assigns worker to assignment
      * @param assignmentId assignmentId of the assignment
