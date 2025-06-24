@@ -38,7 +38,7 @@ public class WorkerAssignmentController {
     @GetMapping("/{workerId}")
     public ResponseEntity<WorkerAssignmentDTO> findWorkerAssignment(@PathVariable String workerId){
         log.info("fetching worker's assignment information");
-        return new ResponseEntity<>(workerAssignmentServiceImpl.findWorkerAssignment(), HttpStatus.FOUND);
+        return new ResponseEntity<>(workerAssignmentServiceImpl.findWorkerAssignment(workerId), HttpStatus.FOUND);
     }
     
     /**
