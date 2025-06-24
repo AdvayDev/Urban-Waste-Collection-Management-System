@@ -59,22 +59,6 @@ public class GlobalExceptionHandler {
         ErrorResponseDTO error = new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), LocalDateTime.now());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-
-    /**
-     * Handles {@link LogAlreadyCompletedException} instances.
-     * It returns an HTTP 409 Conflict status with a consistent ErrorResponse.
-     *
-     * @param ex The {@link LogAlreadyCompletedException} that was thrown.
-     * @return A {@link ResponseEntity} containing an {@link ErrorResponseDTO} with details
-     * about the conflict and an HTTP status of {@code CONFLICT} (409).
-     */
-    @ExceptionHandler(LogAlreadyCompletedException.class)
-    public ResponseEntity<ErrorResponseDTO> handleLogAlreadyCompletedException(LogAlreadyCompletedException ex) {
-        logger.warn("Log Already Completed :{}", ex.getMessage());
-        ErrorResponseDTO error = new ErrorResponseDTO(HttpStatus.CONFLICT.value(), ex.getMessage(), LocalDateTime.now());
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
-    }
-
     /**
      * Handles {@link MethodArgumentNotValidException} instances, which occur when
      * {@code @RequestBody} DTO validation fails. It extracts field errors and

@@ -21,7 +21,6 @@ import com.WasteWise.WasteCollectionLogs.Dto.WasteLogStartRequestDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.WasteLogUpdateRequestDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.ZoneReportDTO;
 import com.WasteWise.WasteCollectionLogs.Handler.InvalidInputException;
-import com.WasteWise.WasteCollectionLogs.Handler.LogAlreadyCompletedException;
 import com.WasteWise.WasteCollectionLogs.Handler.ResourceNotFoundException;
 import com.WasteWise.WasteCollectionLogs.Model.WasteLog;
 import com.WasteWise.WasteCollectionLogs.Repository.WasteLogRepository;
@@ -63,29 +62,10 @@ public class WasteLogServiceImpl {
         logger.debug("Date range validation successful.");
     }
 
-    /**
-     * Validates that no active waste collection log already exists for a given worker, zone, and vehicle.
-     * An active log is one where the `collectionEndTime` is null.
-     *
-     * @param workerId The ID of the worker.
-     * @param zoneId The ID of the zone.
-     * @param vehicleId The ID of the vehicle.
-     * @throws InvalidInputException if an active log is found for the given criteria.
-     */
-    private void validateNoActiveLogExists(String workerId, String zoneId, String vehicleId) {
-    	 logger.debug("Checking for active log for workerId={}, zoneId={}, vehicleId={}", workerId, zoneId, vehicleId);
-        if (wasteLogRepository.findByWorkerIdAndZoneIdAndVehicleIdAndCollectionEndTimeIsNull(
-                workerId, zoneId, vehicleId).isPresent()) {
-        	 logger.warn("ActiveLogExists: An active log already exists for workerId={}, zoneId={}, vehicleId={}", workerId, zoneId, vehicleId);
-            throw new InvalidInputException( String.format(WasteLogConstants.ACTIVE_LOG_EXISTS_MESSAGE, workerId, zoneId, vehicleId));
-        }
-        logger.debug("No active log found for workerId={}, zoneId={}, vehicleId={}", workerId, zoneId, vehicleId);
-    }
     // --- Public Service Methods ---
 
     /**
      * Starts a new waste collection log.
-     * Validates that no active log exists for the given worker, zone, and vehicle before creating a new log.
      *
      * @param request The DTO containing information to start a waste collection log (worker ID, zone ID, vehicle ID).
      * @return A WasteLogResponseDto with the ID of the newly created log and a success message.
@@ -93,8 +73,7 @@ public class WasteLogServiceImpl {
     public WasteLogResponseDTO startCollection(WasteLogStartRequestDTO request) { 
     	 logger.info("Attempting to start new collection log for workerId={}, zoneId={}, vehicleId={}",
                  request.getWorkerId(), request.getZoneId(), request.getVehicleId());
-        // The DTO validation ensures the request is valid before it reaches here.
-    	validateNoActiveLogExists(request.getWorkerId(), request.getZoneId(), request.getVehicleId());
+      
 
         WasteLog wasteLog = new WasteLog();
         wasteLog.setZoneId(request.getZoneId());
@@ -111,27 +90,22 @@ public class WasteLogServiceImpl {
 
     /**
      * Ends an existing waste collection log.
-     * Retrieves the log by its ID, validates that it hasn't been completed already,
+     * Retrieves the log by its Worker ID, validates that it hasn't been completed already,
      * and ensures the end time is not before the start time.
      *
-     * @param request The DTO containing the log ID and the weight collected.
+     * @param request The DTO containing the worker ID and the weight collected.
      * @return A WasteLogResponseDto with the ID of the updated log and a success message.
      * @throws ResourceNotFoundException if the waste log with the given ID is not found.
-     * @throws LogAlreadyCompletedException if the waste log has already been completed.
      * @throws InvalidInputException if the collection end time is before the collection start time.
      */
     public WasteLogResponseDTO endCollection(WasteLogUpdateRequestDTO request) {
-
-    	logger.info("Attempting to end collection log with ID: {} and weight: {}", request.getLogId(), request.getWeightCollected());
-    	WasteLog wasteLog = wasteLogRepository.findById(request.getLogId())
-                .orElseThrow(() -> {
-                    logger.warn("ResourceNotFound: Waste log with ID {} not found.", request.getLogId());
-                    return new ResourceNotFoundException(String.format(WasteLogConstants.WASTE_LOG_NOT_FOUND_MESSAGE, request.getLogId()));
-                });
-        if (wasteLog.getCollectionEndTime() != null) {
-        	logger.warn("LogAlreadyCompleted: Waste log with ID {} is already completed.", request.getLogId());
-            throw new LogAlreadyCompletedException(String.format(WasteLogConstants.LOG_ALREADY_COMPLETED_MESSAGE, request.getLogId()));
-        }
+    	
+    	logger.info("Attempting to end collection log for workerId: {} with weight: {}", request.getWorkerId(), request.getWeightCollected());
+    	WasteLog wasteLog = wasteLogRepository.findByWorkerIdAndCollectionEndTimeIsNull(request.getWorkerId())
+       .orElseThrow(() -> {
+    	  logger.warn("ResourceNotFound: No active waste log found for worker ID {}.", request.getWorkerId());
+    	  return new ResourceNotFoundException(String.format(WasteLogConstants.WASTE_LOG_NOT_FOUND_MESSAGE, request.getWorkerId()));
+    	 });
 
         LocalDateTime currentEndTime = LocalDateTime.now();
         

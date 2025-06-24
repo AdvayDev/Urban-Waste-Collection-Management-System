@@ -7,8 +7,8 @@ public final class WasteLogConstants {
 	    public static final String VEHICLE_REPORT_GENERATED_SUCCESSFULLY = "Vehicle report generated successfully.";
 	    
 	    
-	    public static final String WASTE_LOG_NOT_FOUND_MESSAGE = "Waste Log Not Found With Id %d";
-	    public static final String LOG_ALREADY_COMPLETED_MESSAGE = "Waste Log with ID %d has already been completed.";
+	    public static final String WASTE_LOG_NOT_FOUND_MESSAGE = "No Active Waste Log Not Found With Worker Id %s";
+	    public static final String LOG_ALREADY_COMPLETED_MESSAGE = "Log ID %d was already completed by worker %s.";
 	    public static final String COLLECTION_END_TIME_BEFORE_START_TIME = "Collection End Time cannot be before start time.";
 	   
 	    public static final String END_DATE_CANNOT_BE_BEFORE_START_DATE = "Start date cannot be after end date.";
