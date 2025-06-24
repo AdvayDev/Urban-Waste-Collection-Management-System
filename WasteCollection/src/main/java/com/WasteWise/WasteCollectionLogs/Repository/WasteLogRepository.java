@@ -17,7 +17,6 @@ public interface WasteLogRepository extends JpaRepository<WasteLog,Long>{
     
     
     List<WasteLog> findByVehicleIdAndCollectionStartTimeBetween(String vehicleId, LocalDateTime startDateTime, LocalDateTime endDateTime);
-    
-    
-    Optional<WasteLog> findByWorkerIdAndZoneIdAndVehicleIdAndCollectionEndTimeIsNull(String workerId, String zoneId, String vehicleId);
+        
+    Optional<WasteLog> findByWorkerIdAndCollectionEndTimeIsNull(String workerId);
 }

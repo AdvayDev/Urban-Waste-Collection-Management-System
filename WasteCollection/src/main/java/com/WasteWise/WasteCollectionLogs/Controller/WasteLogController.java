@@ -8,11 +8,8 @@ import com.WasteWise.WasteCollectionLogs.Dto.WasteLogStartRequestDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.WasteLogUpdateRequestDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.ZoneReportDTO;
 import com.WasteWise.WasteCollectionLogs.Handler.InvalidInputException;
-import com.WasteWise.WasteCollectionLogs.Handler.LogAlreadyCompletedException;
 import com.WasteWise.WasteCollectionLogs.Handler.ResourceNotFoundException;
 import com.WasteWise.WasteCollectionLogs.ServiceImpl.WasteLogServiceImpl;
-
-//import org.hibernate.validator.internal.util.logging.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault; 
@@ -77,11 +74,11 @@ public class WasteLogController {
     public ResponseEntity<RestResponse<Object>> startCollection(@Valid @RequestBody WasteLogStartRequestDTO request) {
     	 logger.info("Received request to start collection: {}", request);
         WasteLogResponseDTO serviceResponse = wasteLogService.startCollection(request); // Service returns raw DTO
-        // Build RestResponse in the controller
+        
         RestResponse<Object> restResponse = new RestResponse<>(
             true,
-            serviceResponse.getMessage(), // Use message from service DTO
-            serviceResponse // Pass the service DTO as data
+            serviceResponse.getMessage(), 
+            serviceResponse
         );
         logger.info("Collection started successfully. Response: {}", restResponse);
 
@@ -93,23 +90,21 @@ public class WasteLogController {
      * This endpoint accepts a PUT request to update an ongoing waste collection log
      * with an end time and collected weight. The request body is validated by `@Valid`.
      *
-     * @param request The {@link WasteLogUpdateRequestDTO} containing the log ID to update,
+     * @param request The {@link WasteLogUpdateRequestDTO} containing the worker ID to update,
      * the end time of collection, and the weight collected.
      * @return A {@link ResponseEntity} containing a {@link RestResponse} with the
      * updated log details and an HTTP status of 200 (OK).
-     * @throws ResourceNotFoundException If the waste log with the given ID is not found.
-     * @throws LogAlreadyCompletedException If the waste log has already been marked as completed.
+     * @throws ResourceNotFoundException If the waste log with the given worker ID is not found.
      * @throws InvalidInputException If the provided end time is before the start time, or weight is invalid.
      */
     @PutMapping("/end")
     public ResponseEntity<RestResponse<Object>> endCollection(@Valid @RequestBody WasteLogUpdateRequestDTO request) {
-    	  logger.info("Received request to end collection: {}", request);
-        WasteLogResponseDTO serviceResponse = wasteLogService.endCollection(request); // Service returns raw DTO
-        // Build RestResponse in the controller
+    	  logger.info("Received request to end collection for worker ID: {}", request.getWorkerId());
+        WasteLogResponseDTO serviceResponse = wasteLogService.endCollection(request); 
         RestResponse<Object> restResponse = new RestResponse<>(
             true,
-            serviceResponse.getMessage(), // Use message from service DTO
-            serviceResponse // Pass the service DTO as data
+            serviceResponse.getMessage(), 
+            serviceResponse 
         );
         logger.info("Collection ended successfully. Response: {}", restResponse);
         return ResponseEntity.ok(restResponse);
