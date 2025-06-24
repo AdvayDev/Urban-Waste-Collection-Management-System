@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +28,17 @@ public class WorkerAssignmentController {
      * Finding all the worker-assignments from the database
      * @return list of workerAssignmentDTO(assignmentId, workerId, routeId, zoneId, shift)
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<WorkerAssignmentDTO>> findAllWorkerAssignments(){
         log.info("fetching all the workerAssignments");
         return new ResponseEntity<>(workerAssignmentServiceImpl.findAllWorkerAssignments(), HttpStatus.FOUND);
+    }
+
+    @GetMapping("/{workerId}")
+    public ResponseEntity<WorkerAssignmentDTO> findWorkerAssignment(@PathVariable String workerId){
+        log.info("fetching worker's assignment information");
+        return new ResponseEntity<>(workerAssignmentServiceImpl.findWorkerAssignment(workerId), HttpStatus.FOUND);
     }
     
     /**
@@ -38,6 +46,7 @@ public class WorkerAssignmentController {
      * @param assignmentId assignmentId of the assignment
      * @return String indicating successful creation of tuple
      */
+    @PreAuthorize("hasRole('ADMIN'")
     @PostMapping("/{assignmentId}")
     public ResponseEntity<String> assignWorkerToAssignment(
             @PathVariable String assignmentId,

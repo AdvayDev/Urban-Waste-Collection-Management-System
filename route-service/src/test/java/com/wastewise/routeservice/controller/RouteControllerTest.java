@@ -1,29 +1,36 @@
 package com.wastewise.routeservice.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wastewise.routeservice.dto.RouteCreationRequestDTO;
-import com.wastewise.routeservice.dto.RouteResponseDTO;
-import com.wastewise.routeservice.dto.RouteUpdateRequestDTO;
-import com.wastewise.routeservice.exception.GlobalExceptionHandler;
-import com.wastewise.routeservice.exception.custom.*;
-import com.wastewise.routeservice.service.RouteService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wastewise.routeservice.dto.RouteCreationRequestDTO;
+import com.wastewise.routeservice.dto.RouteResponseDTO;
+import com.wastewise.routeservice.dto.RouteUpdateRequestDTO;
+import com.wastewise.routeservice.exception.GlobalExceptionHandler;
+import com.wastewise.routeservice.exception.custom.NoRouteChangesDetectedException;
+import com.wastewise.routeservice.exception.custom.RouteNotFoundException;
+import com.wastewise.routeservice.exception.custom.ZoneNotFoundException;
+import com.wastewise.routeservice.service.RouteService;
 
 /**
  * ------------------------------------------------------------------------------
@@ -42,7 +49,7 @@ public class RouteControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private RouteService routeService;
 
     @Autowired

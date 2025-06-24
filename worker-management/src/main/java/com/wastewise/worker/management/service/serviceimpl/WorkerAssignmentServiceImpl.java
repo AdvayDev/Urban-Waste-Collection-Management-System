@@ -80,6 +80,25 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
         return "Worker assigned successfully";
     }
 
+    public WorkerAssignmentDTO findWorkerAssignment(String workerId){
+        log.info("Fetching worker assignment information of worker with Id {}",workerId);
+
+        WorkerAssignmentDTO dto = new WorkerAssignmentDTO();
+
+        WorkerAssignment assignment = workerAssignmentRepository.findByIdWorkerId(workerId);
+        if(assignment == null){
+            throw new ResourceNotFoundException("Worker assignment not found");
+        }
+
+        dto.setAssignmentId(assignment.getId().getAssignmentId());
+        dto.setWorkerId(assignment.getId().getWorkerId());
+        dto.setRouteId(assignment.getRouteId());
+        dto.setZoneId(assignment.getZoneId());
+        dto.setShift(assignment.getShift().name());
+
+        return dto;
+    }
+
     /**
      * Updating an assignment by changing assigned worker to the assignment. Also updates their status
      * @param assignmentId of assignment
