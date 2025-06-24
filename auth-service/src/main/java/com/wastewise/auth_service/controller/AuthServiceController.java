@@ -6,10 +6,7 @@ import com.wastewise.auth_service.dto.PasswordResetDTO;
 import com.wastewise.auth_service.dto.RegisterWorkerDTO;
 import com.wastewise.auth_service.service.serviceimpl.AuthServiceImpl;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/wastewise")
@@ -38,5 +35,13 @@ public class AuthServiceController {
         authServiceImpl.resetPassword(dto);
         return ResponseEntity.ok("Password updated successfully");
     }
+
+    @GetMapping("/validate")
+    public ResponseEntity<LoginResponseDTO> validateToken(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        LoginResponseDTO response = authServiceImpl.validateToken(token);
+        return ResponseEntity.ok(response);
+    }
+
 
 }

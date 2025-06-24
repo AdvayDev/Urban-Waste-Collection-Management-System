@@ -14,10 +14,11 @@ import com.wastewise.auth_service.repository.RoleRepository;
 import com.wastewise.auth_service.repository.UserRepository;
 import com.wastewise.auth_service.security.JwtUtil;
 import com.wastewise.auth_service.service.AuthService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -81,5 +82,16 @@ public class AuthServiceImpl implements AuthService {
         user.setUpdatedDate(LocalDateTime.now());
         userRepository.save(user);
     }
+
+    public LoginResponseDTO validateToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey("256-bit-secret-key") // Use your actual secret key
+                .parseClaimsJws(token)
+                .getBody();
+
+        String role = claims.get("role", String.class);
+        return new LoginResponseDTO(token, role);
+    }
+
 
 }
