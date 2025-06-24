@@ -24,17 +24,22 @@ public class WorkerAssignmentController {
         this.workerAssignmentServiceImpl = workerAssignmentServiceImpl;
     }
 
-    /**
+    /** Accessed by: Admin
      * Finding all the worker-assignments from the database
      * @return list of workerAssignmentDTO(assignmentId, workerId, routeId, zoneId, shift)
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<WorkerAssignmentDTO>> findAllWorkerAssignments(){
         log.info("fetching all the workerAssignments");
         return new ResponseEntity<>(workerAssignmentServiceImpl.findAllWorkerAssignments(), HttpStatus.FOUND);
     }
 
+    /**
+     * Accessed by: Sanitary worker
+     * Method to fetch all the details of worker's assignment
+     * @param workerId of worker
+     * @return workerAssignment DTO consist of information such as assignmentId, workerId, routeId, zoneId, Shift
+     */
     @GetMapping("/{workerId}")
     public ResponseEntity<WorkerAssignmentDTO> findWorkerAssignment(@PathVariable String workerId){
         log.info("fetching worker's assignment information");
@@ -42,11 +47,11 @@ public class WorkerAssignmentController {
     }
     
     /**
+     *  Accessed by: Admin
      * Assigns worker to assignment
      * @param assignmentId assignmentId of the assignment
      * @return String indicating successful creation of tuple
      */
-    @PreAuthorize("hasRole('ADMIN'")
     @PostMapping("/{assignmentId}")
     public ResponseEntity<String> assignWorkerToAssignment(
             @PathVariable String assignmentId,
@@ -59,6 +64,7 @@ public class WorkerAssignmentController {
 
 
     /**
+     * Accessed by: Admin
      * Updating worker Assignment. Replacing one worker with only one worker and changing the status
      * @param assignmentId of the assignment to which new worker needs to he assigned
      * @param dto updateWorkerAssignDTO (OldWorkerId, newWorkerId)
@@ -73,6 +79,7 @@ public class WorkerAssignmentController {
     }
 
     /**
+     * Accessed By: Admin
      * update both the workers assigned to the assignment with new workers
      * @param assignmentId id of the assignment
      * @param request WorkerReassignDTO(oldWorkerId1, oldWorkerId2, newWorkerId1, newWorkerId2)
@@ -97,6 +104,7 @@ public class WorkerAssignmentController {
     //design an endpoint such that it fetches workerIds related to the assignmentId passed
 
     /**
+     * Accessed By: Admin
      * Deletes assignment and updates the status of the workers
      * @param assignmentId id of assignment related to which we need to delete the tuples of worker assignment
      * @return string stating that the worker assignment is deleted

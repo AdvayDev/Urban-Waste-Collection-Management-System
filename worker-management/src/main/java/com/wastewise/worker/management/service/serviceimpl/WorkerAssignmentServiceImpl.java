@@ -80,6 +80,11 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
         return "Worker assigned successfully";
     }
 
+    /**
+     * Method returns the assignment information of worker with ID
+     * @param workerId of worker
+     * @return WorkerAssignmentDTO consist of workerId, assignmentId, ZoneId, RouteId, Shift
+     */
     public WorkerAssignmentDTO findWorkerAssignment(String workerId){
         log.info("Fetching worker assignment information of worker with Id {}",workerId);
 

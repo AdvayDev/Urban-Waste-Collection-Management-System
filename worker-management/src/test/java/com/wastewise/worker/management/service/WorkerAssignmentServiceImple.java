@@ -1,6 +1,7 @@
 package com.wastewise.worker.management.service;
 
 import com.wastewise.worker.management.dto.WorkerAssignmentDTO;
+import com.wastewise.worker.management.enums.Shift;
 import com.wastewise.worker.management.enums.WorkerStatus;
 import com.wastewise.worker.management.exception.*;
 import com.wastewise.worker.management.mapper.WorkerAssignmentMapper;
@@ -62,6 +63,48 @@ class WorkerAssignmentServiceImplTest {
         List<WorkerAssignmentDTO> result = service.findAllWorkerAssignments();
         assertEquals(1, result.size());
     }
+
+
+    @Test
+    void testFindWorkerAssignment_NotFound() {
+        // Arrange
+        String workerId = "W999";
+        Mockito.when(workerAssignmentRepository.findByIdWorkerId(workerId)).thenReturn(null);
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.findWorkerAssignment(workerId);
+        });
+    }
+
+    @Test
+    void testFindWorkerAssignment_Success() {
+        // Arrange
+        String workerId = "W123";
+        WorkerAssignmentId assignmentId = new WorkerAssignmentId();
+        assignmentId.setWorkerId(workerId);
+        assignmentId.setAssignmentId("A001");
+
+        WorkerAssignment assignment = new WorkerAssignment();
+        assignment.setId(assignmentId);
+        assignment.setRouteId("Z001-R001");
+        assignment.setZoneId("Z001");
+        assignment.setShift(Shift.DAY); // Assuming Shift is an enum
+
+        Mockito.when(workerAssignmentRepository.findByIdWorkerId(workerId)).thenReturn(assignment);
+
+        // Act
+        WorkerAssignmentDTO result = service.findWorkerAssignment(workerId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("A001", result.getAssignmentId());
+        assertEquals("W123", result.getWorkerId());
+        assertEquals("Z001-R001", result.getRouteId());
+        assertEquals("Z001", result.getZoneId());
+        assertEquals("DAY", result.getShift());
+    }
+
 
     @Test
     void testAssignWorkerToAssignment_Success() {
