@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -35,6 +36,21 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
         this.workerMapper = workerMapper;
         this.restTemplate = restTemplate;
     }
+
+    private static final Map<String, String> roleIdToName = Map.of(
+            "001", "ADMIN",
+            "002", "SCHEDULER",
+            "003", "SANITARY_WORKER"
+    );
+
+    public static String getRoleName(String roleId) {
+        String roleName = roleIdToName.get(roleId);
+        if (roleName == null) {
+            throw new IllegalArgumentException("Invalid roleId: " + roleId);
+        }
+        return roleName;
+    }
+
 
     public String generateWorkerId() {
         long count = workerRepository.countAll();
@@ -70,8 +86,9 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
         // Now register in Auth-Service
         try {
             RegisterWorkerDTO registerDTO = new RegisterWorkerDTO();
+            String roleName = getRoleName(dto.getRoleId());
             registerDTO.setWorkerId(id);
-            registerDTO.setRoleName(dto.getRoleId()); // Assuming this maps directly to Role name like "Scheduler", etc.
+            registerDTO.setRoleName(roleName); // Assuming this maps directly to Role name like "Scheduler", etc.
 
             restTemplate.postForEntity(
                     authServiceUrl + "/auth/internal/register-worker",
