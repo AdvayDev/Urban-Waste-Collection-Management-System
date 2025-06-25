@@ -3,12 +3,16 @@
 *.jar
 *.war
 *.ear
+# Add for compiled classes/resources that shouldn't be committed
+/classes/
 
 # Logs
 *.log
 spring.log
+# Specific log directories
+logs/
 
-# IDEs
+# IDEs (Already covered, but good to double-check existing)
 ## Eclipse
 .project
 .classpath
@@ -35,11 +39,21 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/
+# Add for Maven Wrapper files that are generated or specific to the local build
+/.mvn/wrapper/maven-wrapper.jar
+/.mvn/wrapper/maven-wrapper.properties
 
 ## Gradle
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
+# Add for Gradle files
+.gradle-user-home/
+gradle/
+**/.gradle/
+*.gradle.properties
+*.lock
+/out/
 
 # OS-specific
 .DS_Store
@@ -61,3 +75,5 @@ Icon?
 *.sqlite
 *.h2.db
 *.mv.db
+# Add for common generated files
+nohup.out # If you run processes in the background
