@@ -91,7 +91,7 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
             registerDTO.setRoleName(roleName); // Assuming this maps directly to Role name like "Scheduler", etc.
 
             restTemplate.postForEntity(
-                    authServiceUrl + "/auth/internal/register-worker",
+                    authServiceUrl + "/wastewise/internal/register-worker",
                     registerDTO,
                     String.class
             );
@@ -171,7 +171,7 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
         WorkerStatus status = WorkerStatus.valueOf(dto.getWorkerStatus());
         worker.setWorkerStatus(status);
         worker.setUpdatedDate(LocalDateTime.now());
-        worker.setUpdatedBy("000"); //To be updated via workerId in JWT token
+        worker.setUpdatedBy("W001"); //To be updated via workerId in JWT token
         workerRepository.save(worker);
         return "Updated worker with id "+worker.getWorkerId();
     }
@@ -189,6 +189,8 @@ public class WorkerServiceImpl implements com.wastewise.worker.management.servic
                 .orElseThrow(() -> new WorkerNotFoundException("Worker with id " + id + " does not exist"));
         log.info("Changing the status of worker to {}",workerStatus);
         worker.setWorkerStatus(workerStatus);
+        worker.setUpdatedBy("W001");
+        worker.setUpdatedDate(LocalDateTime.now());
         workerRepository.save(worker);
 
         return "Status of worker with id "+ id + " changed successfully";

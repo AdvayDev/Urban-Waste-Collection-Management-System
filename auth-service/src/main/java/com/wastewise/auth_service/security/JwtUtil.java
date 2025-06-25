@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String Secret_key = "256-bit-secret-key"; //to be replaced by environment variable
+    private final String Secret_key = "256-bit-secret-key-to-generate-the-encoded-message"; //to be replaced by environment variable
 
     private final long Expiration_time = 1000 * 60 * 60 * 10; //10 hours
 
