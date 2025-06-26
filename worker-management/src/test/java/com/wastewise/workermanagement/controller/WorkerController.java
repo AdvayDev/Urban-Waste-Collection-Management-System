@@ -1,6 +1,5 @@
 package com.wastewise.workermanagement.controller;
 
-import com.wastewise.worker.management.dto.*;
 import com.wastewise.workermanagement.dto.WorkerCreateDTO;
 import com.wastewise.workermanagement.dto.WorkerDTO;
 import com.wastewise.workermanagement.dto.WorkerInfoDTO;

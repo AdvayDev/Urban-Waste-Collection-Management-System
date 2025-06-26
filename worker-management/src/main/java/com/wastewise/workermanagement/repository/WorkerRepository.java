@@ -17,7 +17,7 @@ public interface WorkerRepository extends JpaRepository<Worker,String> {
     @Query("Select w.workerId from Worker w")
     List<String> findAllWorkerId();
 
-    @Query("SELECT new dto.com.wastewise.workermanagement.WorkerInfoDTO(w.id, w.name) FROM Worker w WHERE w.workerStatus = 'AVAILABLE' AND w.roleId = '003'")
+    @Query("SELECT new com.wastewise.workermanagement.dto.WorkerInfoDTO(w.id, w.name) FROM Worker w WHERE w.workerStatus = 'AVAILABLE' AND w.roleId = '003'")
     List<WorkerInfoDTO> findAvailableWorkersByRole();
 
     boolean existsByContactNumber(String contactNumber);

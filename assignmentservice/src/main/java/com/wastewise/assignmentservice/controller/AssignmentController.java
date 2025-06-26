@@ -19,11 +19,11 @@ public class AssignmentController {
 
 
     /**
-     * Creates a new assignment.
-     *
-     * @param dto the assignment data to create
-     * @return ResponseEntity containing the created AssignmentDTO and HTTP status 201 (Created)
-     */
+     * Creates a new assignment.
+     *
+     * @param dto the assignment data to create
+     * @return ResponseEntity containing the created AssignmentDTO and HTTP status 201 (Created)
+     */
 
     @PostMapping
     public ResponseEntity<AssignmentDTO> create(@RequestBody AssignmentDTO dto) {
@@ -32,11 +32,11 @@ public class AssignmentController {
     }
 
      /**
-     * Retrieves an assignment by its ID.
-     *
-     * @param id the ID of the assignment
-     * @return ResponseEntity containing the AssignmentDTO and HTTP status 200 (OK)
-     */
+ * Retrieves an assignment by its ID.
+ *
+ * @param id the ID of the assignment
+ * @return ResponseEntity containing the AssignmentDTO and HTTP status 200 (OK)
+ */
 
     @GetMapping("/{id}")
     public ResponseEntity<AssignmentDTO> getById(@PathVariable String id) {
@@ -45,10 +45,10 @@ public class AssignmentController {
     }
 
      /**
-     * Retrieves all assignments.
-     *
-     * @return ResponseEntity containing a list of AssignmentDTOs and HTTP status 200 (OK)
-     */
+ * Retrieves all assignments.
+ *
+ * @return ResponseEntity containing a list of AssignmentDTOs and HTTP status 200 (OK)
+ */
     @GetMapping
     public ResponseEntity<List<AssignmentDTO>> getAll() {
         log.info("Fetching all assignments");
@@ -56,11 +56,11 @@ public class AssignmentController {
     }
 
      /**
-     * Deletes an assignment by its ID.
-     *
-     * @param id the ID of the assignment to delete
-     * @return ResponseEntity with a success message and HTTP status 200 (OK)
-     */
+ * Deletes an assignment by its ID.
+ *
+ * @param id the ID of the assignment to delete
+ * @return ResponseEntity with a success message and HTTP status 200 (OK)
+ */
     
      
     @DeleteMapping("/{id}")

@@ -92,6 +92,4 @@ public class AuthServiceImpl implements AuthService {
         String role = claims.get("role", String.class);
         return new LoginResponseDTO(token, role);
     }
-
-
 }

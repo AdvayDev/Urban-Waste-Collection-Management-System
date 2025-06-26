@@ -1,7 +1,6 @@
 package com.wastewise.workermanagement.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wastewise.worker.management.dto.*;
 import com.wastewise.workermanagement.dto.UpdateWorkerAssignDTO;
 import com.wastewise.workermanagement.dto.WorkerAssignmentDTO;
 import com.wastewise.workermanagement.dto.WorkerReassignRequestDTO;
