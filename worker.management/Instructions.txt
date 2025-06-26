@@ -1,0 +1,6 @@
+When controller, return using ResponseEntity of RestResponse of object, ResponseEntity<RestResponse<Object>>
+
+Add validation to validate the incoming data
+
+Add constants for certain strings
+
