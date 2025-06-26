@@ -8,11 +8,8 @@ import com.WasteWise.WasteCollectionLogs.Dto.WasteLogStartRequestDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.WasteLogUpdateRequestDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.ZoneReportDTO;
 import com.WasteWise.WasteCollectionLogs.Handler.InvalidInputException;
-import com.WasteWise.WasteCollectionLogs.Handler.LogAlreadyCompletedException;
 import com.WasteWise.WasteCollectionLogs.Handler.ResourceNotFoundException;
 import com.WasteWise.WasteCollectionLogs.ServiceImpl.WasteLogServiceImpl;
-
-//import org.hibernate.validator.internal.util.logging.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault; 
@@ -22,6 +19,7 @@ import jakarta.validation.constraints.Pattern;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger; 
@@ -61,6 +59,7 @@ public class WasteLogController {
     }
 
     /**
+     * Accessed by Sanitary Worker
      * Initiates a new waste collection log.
      * This endpoint accepts a POST request with the details of a new waste collection.
      * The request body is validated automatically by Spring due to the `@Valid` annotation,
@@ -73,15 +72,16 @@ public class WasteLogController {
      * @throws InvalidInputException If any business rule validation fails (e.g., invalid ID format,
      * which should ideally be caught by @Pattern, but can also be from service).
      */
+    @PreAuthorize("hasRole('SANITARY_WORKER')")
     @PostMapping("/start")
     public ResponseEntity<RestResponse<Object>> startCollection(@Valid @RequestBody WasteLogStartRequestDTO request) {
     	 logger.info("Received request to start collection: {}", request);
         WasteLogResponseDTO serviceResponse = wasteLogService.startCollection(request); // Service returns raw DTO
-        // Build RestResponse in the controller
+        
         RestResponse<Object> restResponse = new RestResponse<>(
             true,
-            serviceResponse.getMessage(), // Use message from service DTO
-            serviceResponse // Pass the service DTO as data
+            serviceResponse.getMessage(), 
+            serviceResponse
         );
         logger.info("Collection started successfully. Response: {}", restResponse);
 
@@ -89,32 +89,33 @@ public class WasteLogController {
     }
 
     /**
+     * Accessed by Sanitary Worker
      * Completes an existing waste collection log.
      * This endpoint accepts a PUT request to update an ongoing waste collection log
      * with an end time and collected weight. The request body is validated by `@Valid`.
      *
-     * @param request The {@link WasteLogUpdateRequestDTO} containing the log ID to update,
+     * @param request The {@link WasteLogUpdateRequestDTO} containing the worker ID to update,
      * the end time of collection, and the weight collected.
      * @return A {@link ResponseEntity} containing a {@link RestResponse} with the
      * updated log details and an HTTP status of 200 (OK).
-     * @throws ResourceNotFoundException If the waste log with the given ID is not found.
-     * @throws LogAlreadyCompletedException If the waste log has already been marked as completed.
+     * @throws ResourceNotFoundException If the waste log with the given worker ID is not found.
      * @throws InvalidInputException If the provided end time is before the start time, or weight is invalid.
      */
+    @PreAuthorize("hasRole('SANITARY_WORKER')")
     @PutMapping("/end")
     public ResponseEntity<RestResponse<Object>> endCollection(@Valid @RequestBody WasteLogUpdateRequestDTO request) {
-    	  logger.info("Received request to end collection: {}", request);
-        WasteLogResponseDTO serviceResponse = wasteLogService.endCollection(request); // Service returns raw DTO
-        // Build RestResponse in the controller
+    	  logger.info("Received request to end collection for worker ID: {}", request.getWorkerId());
+        WasteLogResponseDTO serviceResponse = wasteLogService.endCollection(request); 
         RestResponse<Object> restResponse = new RestResponse<>(
             true,
-            serviceResponse.getMessage(), // Use message from service DTO
-            serviceResponse // Pass the service DTO as data
+            serviceResponse.getMessage(), 
+            serviceResponse 
         );
         logger.info("Collection ended successfully. Response: {}", restResponse);
         return ResponseEntity.ok(restResponse);
     }
     /**
+     * Accessed by Admin
      * Retrieves a daily summary report for a specific waste collection zone within a given date range.
      * This endpoint handles GET requests to provide aggregated waste collection data for a zone.
      * The `zoneId` path variable is validated using a regular expression defined in {@link WasteLogConstants}.
@@ -133,13 +134,14 @@ public class WasteLogController {
      * @throws jakarta.validation.ConstraintViolationException If `zoneId` does not match the required pattern.
      * @throws org.springframework.web.method.annotation.MethodArgumentTypeMismatchException If dates are not in correct format.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reports/zone")
     public ResponseEntity<RestResponse<Page<ZoneReportDTO>>> getZoneLogs( // Return type changed
             @RequestParam @Pattern(regexp = WasteLogConstants.ZONE_ID_REGEX,
                     message = "Invalid Zone ID format. Must be Z### (e.g., Z001).") String zoneId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @PageableDefault(size=1,sort = "date", direction = Sort.Direction.ASC) Pageable pageable) { // Added Pageable with fixed sort default
+            @PageableDefault(size=10,sort = "date", direction = Sort.Direction.ASC) Pageable pageable) { // Added Pageable with fixed sort default
     	  logger.info("Received request for zone report: zoneId={}, startDate={}, endDate={}, pageable={}",
                   zoneId, startDate, endDate, pageable);
         Page<ZoneReportDTO> reportsPage = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable); // Pass pageable
@@ -155,6 +157,7 @@ public class WasteLogController {
     }
 
     /**
+     * Accessed by Admin
      * Retrieves collection logs for a specific vehicle within a given date range.
      * This endpoint provides detailed waste collection log entries for a particular vehicle.
      * The `vehicleId` path variable is validated using a regular expression from {@link WasteLogConstants}.
@@ -173,13 +176,14 @@ public class WasteLogController {
      * @throws jakarta.validation.ConstraintViolationException If `vehicleId` does not match the required pattern.
      * @throws org.springframework.web.method.annotation.MethodArgumentTypeMismatchException If dates are not in correct format.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/reports/vehicle")
     public ResponseEntity<RestResponse<Page<VehicleReportDTO>>> getVehicleLogs(
             @RequestParam @Pattern(regexp = WasteLogConstants.VEHICLE_ID_REGEX,
                     message = "Invalid Vehicle ID format. Must be RT### or PT### (e.g., RT001).") String vehicleId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @PageableDefault(size=1,sort = "collectionDate", direction = Sort.Direction.ASC) Pageable pageable) { 
+            @PageableDefault(size=10,sort = "collectionDate", direction = Sort.Direction.ASC) Pageable pageable) { 
     	 logger.info("Received request for vehicle report: vehicleId={}, startDate={}, endDate={}, pageable={}",
                  vehicleId, startDate, endDate, pageable);
         Page<VehicleReportDTO> reportsPage = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable); 
@@ -193,4 +197,7 @@ public class WasteLogController {
                 reportsPage.getContent().size(), reportsPage.getTotalElements(), restResponse);
         return ResponseEntity.ok(restResponse);
     }
+    /**
+     * When you add a new endpoint, just add this annotation @PreAuthorize("hasRole('ADMIN')") above the method.
+     */
 }

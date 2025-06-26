@@ -1,13 +1,12 @@
 package com.WasteWise.WasteCollectionLogs.ServiceImpl;
 
 import com.WasteWise.WasteCollectionLogs.Constants.WasteLogConstants;
-import com.WasteWise.WasteCollectionLogs.Dto.VehicleReportDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.WasteLogResponseDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.WasteLogStartRequestDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.WasteLogUpdateRequestDTO;
 import com.WasteWise.WasteCollectionLogs.Dto.ZoneReportDTO;
+import com.WasteWise.WasteCollectionLogs.Dto.VehicleReportDTO;
 import com.WasteWise.WasteCollectionLogs.Handler.InvalidInputException;
-import com.WasteWise.WasteCollectionLogs.Handler.LogAlreadyCompletedException;
 import com.WasteWise.WasteCollectionLogs.Handler.ResourceNotFoundException;
 import com.WasteWise.WasteCollectionLogs.Model.WasteLog;
 import com.WasteWise.WasteCollectionLogs.Repository.WasteLogRepository;
@@ -17,16 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page; // Import Page
-import org.springframework.data.domain.PageRequest; // For creating Pageable
-import org.springframework.data.domain.Pageable; // Import Pageable
-import org.springframework.data.domain.Sort; // For Pageable sorting
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -34,424 +30,530 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class) // Enables Mockito annotations for JUnit 5
+@ExtendWith(MockitoExtension.class)
 @DisplayName("WasteLogServiceImpl Unit Tests")
 class WasteLogServiceImplTest {
 
-    @Mock // Creates a mock instance of WasteLogRepository
+    @Mock
     private WasteLogRepository wasteLogRepository;
 
-    @InjectMocks // Injects the mocks into WasteLogServiceImpl
+    @InjectMocks
     private WasteLogServiceImpl wasteLogService;
-
-
-    private static final LocalDateTime FIXED_NOW = LocalDateTime.of(2025, 6, 20, 10, 0, 0);
 
     @BeforeEach
     void setUp() {
         
     }
 
+    // --- startCollection Tests ---
+
     @Test
-    @DisplayName("shouldStartCollectionSuccessfully: Valid request with no active log should succeed")
-    void shouldStartCollectionSuccessfully() {
-        // Given
+    @DisplayName("startCollection: Should successfully start a new collection log")
+    void startCollection_Success() {
+      
         WasteLogStartRequestDTO request = new WasteLogStartRequestDTO("Z001", "RT001", "W001");
         WasteLog newLog = new WasteLog();
-        newLog.setLogId(1L); // Simulate ID assigned by DB
+        newLog.setLogId(1L);
         newLog.setZoneId("Z001");
         newLog.setVehicleId("RT001");
         newLog.setWorkerId("W001");
+        newLog.setCollectionStartTime(LocalDateTime.now()); 
+        newLog.setCreatedDate(LocalDateTime.now()); 
 
-        // When
-        when(wasteLogRepository.findByWorkerIdAndZoneIdAndVehicleIdAndCollectionEndTimeIsNull(anyString(), anyString(), anyString()))
-                .thenReturn(Optional.empty()); // No active log exists
         when(wasteLogRepository.save(any(WasteLog.class))).thenReturn(newLog);
 
-        // Use MockedStatic to control LocalDateTime.now() for consistent time-dependent logic
-        try (MockedStatic<LocalDateTime> mockedLocalDateTime = mockStatic(LocalDateTime.class)) {
-            mockedLocalDateTime.when(LocalDateTime::now).thenReturn(FIXED_NOW);
-
-            WasteLogResponseDTO response = wasteLogService.startCollection(request);
-
-            // Then
-            assertNotNull(response);
-            assertEquals(1L, response.getLogId());
-            assertEquals(WasteLogConstants.WASTE_COLLECTION_LOG_RECORDED_SUCCESSFULLY, response.getMessage());
-
-            // Verify repository calls and the properties of the saved log
-            verify(wasteLogRepository, times(1))
-                    .findByWorkerIdAndZoneIdAndVehicleIdAndCollectionEndTimeIsNull("W001", "Z001", "RT001");
-            verify(wasteLogRepository, times(1)).save(argThat(log ->
-                    log.getZoneId().equals("Z001") &&
-                            log.getVehicleId().equals("RT001") &&
-                            log.getWorkerId().equals("W001") &&
-                            log.getCollectionStartTime().equals(FIXED_NOW) &&
-                            log.getCreatedDate().equals(FIXED_NOW) &&
-                            log.getCollectionEndTime() == null && // Should be null on start
-                            log.getWeightCollected() == null      // Should be null on start
-            ));
-        }
+        WasteLogResponseDTO response = wasteLogService.startCollection(request);
+        
+        assertNotNull(response);
+        assertEquals(1L, response.getLogId());
+        assertEquals(WasteLogConstants.WASTE_COLLECTION_LOG_RECORDED_SUCCESSFULLY, response.getMessage());
+        verify(wasteLogRepository, times(1)).save(any(WasteLog.class));
     }
 
-    @Test
-    @DisplayName("shouldThrowInvalidInputExceptionWhenActiveLogExists: Active log should prevent new collection")
-    void shouldThrowInvalidInputExceptionWhenActiveLogExists() {
-        // Given
-        WasteLogStartRequestDTO request = new WasteLogStartRequestDTO("Z001", "RT001", "W001");
-        // Simplified WasteLog constructor for an active log
-        WasteLog activeLog = new WasteLog();
-        activeLog.setLogId(1L);
-        activeLog.setZoneId("Z001");
-        activeLog.setVehicleId("RT001");
-        activeLog.setWorkerId("W001");
-        activeLog.setCollectionStartTime(LocalDateTime.now().minusHours(1));
-
-        // When
-        when(wasteLogRepository.findByWorkerIdAndZoneIdAndVehicleIdAndCollectionEndTimeIsNull(anyString(), anyString(), anyString()))
-                .thenReturn(Optional.of(activeLog)); // Active log exists
-
-        // Then
-        InvalidInputException exception = assertThrows(InvalidInputException.class, () ->
-                wasteLogService.startCollection(request)
-        );
-
-        String expectedMessage = String.format(WasteLogConstants.ACTIVE_LOG_EXISTS_MESSAGE, "W001", "Z001", "RT001");
-        assertEquals(expectedMessage, exception.getMessage());
-
-        // Verify save was NOT called
-        verify(wasteLogRepository, times(1))
-                .findByWorkerIdAndZoneIdAndVehicleIdAndCollectionEndTimeIsNull("W001", "Z001", "RT001");
-        verify(wasteLogRepository, never()).save(any(WasteLog.class));
-    }
-
-    // --- 2. endCollection Tests ---
+    // --- endCollection Tests ---
 
     @Test
-    @DisplayName("shouldEndCollectionSuccessfully: Existing, uncompleted log should be updated")
-    void shouldEndCollectionSuccessfully() {
-        // Given
-        WasteLogUpdateRequestDTO request = new WasteLogUpdateRequestDTO(1L, 150.0);
-        WasteLog existingLog = new WasteLog(); // Use empty constructor, then set fields
+    @DisplayName("endCollection: Should successfully end an active collection log")
+    void endCollection_Success() {
+      
+        WasteLogUpdateRequestDTO request = new WasteLogUpdateRequestDTO("W001", 150.0);
+        WasteLog existingLog = new WasteLog(); // Using no-args constructor
         existingLog.setLogId(1L);
+        existingLog.setWorkerId("W001");
+        existingLog.setZoneId("Z001");
+        existingLog.setVehicleId("RT001"); 
+        existingLog.setCollectionStartTime(LocalDateTime.now().minusHours(1)); 
+        existingLog.setCollectionEndTime(null);
+        existingLog.setWeightCollected(0.0); 
+        existingLog.setCreatedDate(LocalDateTime.now().minusHours(2)); 
+
+
+        when(wasteLogRepository.findByWorkerIdAndCollectionEndTimeIsNull(request.getWorkerId()))
+                .thenReturn(Optional.of(existingLog));
+        when(wasteLogRepository.save(any(WasteLog.class))).thenReturn(existingLog); // Mock save after update
+
+        WasteLogResponseDTO response = wasteLogService.endCollection(request);
+
+        assertNotNull(response);
+        assertEquals(1L, response.getLogId());
+        assertEquals(WasteLogConstants.WASTE_COLLECTION_LOG_COMPLETED_SUCCESSFULLY, response.getMessage());
+        assertNotNull(existingLog.getCollectionEndTime());
+        assertEquals(150.0, existingLog.getWeightCollected());
+        assertNotNull(existingLog.getUpdatedDate()); 
+        verify(wasteLogRepository, times(1)).findByWorkerIdAndCollectionEndTimeIsNull(request.getWorkerId());
+        verify(wasteLogRepository, times(1)).save(existingLog);
+    }
+
+    @Test
+    @DisplayName("endCollection: Should throw ResourceNotFoundException if no active log found for worker")
+    void endCollection_NoActiveLog_ThrowsResourceNotFoundException() {
+        WasteLogUpdateRequestDTO request = new WasteLogUpdateRequestDTO("W001", 150.0);
+
+        when(wasteLogRepository.findByWorkerIdAndCollectionEndTimeIsNull(request.getWorkerId()))
+                .thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> wasteLogService.endCollection(request));
+
+        assertEquals(String.format(WasteLogConstants.WASTE_LOG_NOT_FOUND_MESSAGE, request.getWorkerId()), exception.getMessage());
+        verify(wasteLogRepository, times(1)).findByWorkerIdAndCollectionEndTimeIsNull(request.getWorkerId());
+        verify(wasteLogRepository, never()).save(any(WasteLog.class)); // Ensure save is not called
+    }
+
+    @Test
+    @DisplayName("endCollection: Should throw InvalidInputException if end time is before start time")
+    void endCollection_EndTimeBeforeStartTime_ThrowsInvalidInputException() {
+        
+        WasteLogUpdateRequestDTO request = new WasteLogUpdateRequestDTO("W001", 150.0);
+        WasteLog existingLog = new WasteLog(); // Using no-args constructor
+        existingLog.setLogId(1L);
+        existingLog.setWorkerId("W001");
         existingLog.setZoneId("Z001");
         existingLog.setVehicleId("RT001");
-        existingLog.setWorkerId("W001");
-        existingLog.setCollectionStartTime(LocalDateTime.of(2025, 6, 20, 9, 0, 0));
-        existingLog.setCreatedDate(LocalDateTime.of(2025, 6, 20, 9, 0, 0));
-        // collectionEndTime and weightCollected are null initially
+       
+        existingLog.setCollectionStartTime(LocalDateTime.now().plusHours(1));
+        existingLog.setCollectionEndTime(null);
+        existingLog.setWeightCollected(0.0);
+        existingLog.setCreatedDate(LocalDateTime.now().minusHours(2));
 
-        // When
-        when(wasteLogRepository.findById(1L)).thenReturn(Optional.of(existingLog));
-        // Mock save to return the same object after update (common practice)
-        when(wasteLogRepository.save(any(WasteLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        try (MockedStatic<LocalDateTime> mockedLocalDateTime = mockStatic(LocalDateTime.class)) {
-            mockedLocalDateTime.when(LocalDateTime::now).thenReturn(FIXED_NOW);
+        when(wasteLogRepository.findByWorkerIdAndCollectionEndTimeIsNull(request.getWorkerId()))
+                .thenReturn(Optional.of(existingLog));
 
-            WasteLogResponseDTO response = wasteLogService.endCollection(request);
+       
+        InvalidInputException exception = assertThrows(InvalidInputException.class,
+                () -> wasteLogService.endCollection(request));
 
-            // Then
-            assertNotNull(response);
-            assertEquals(1L, response.getLogId());
-            assertEquals(WasteLogConstants.WASTE_COLLECTION_LOG_COMPLETED_SUCCESSFULLY, response.getMessage());
-
-            // Verify repository calls and the updated state of the log
-            verify(wasteLogRepository, times(1)).findById(1L);
-            verify(wasteLogRepository, times(1)).save(argThat(log ->
-                    log.getLogId().equals(1L) &&
-                            log.getCollectionEndTime().equals(FIXED_NOW) &&
-                            log.getWeightCollected().equals(150.0) &&
-                            log.getUpdatedDate().equals(FIXED_NOW)
-            ));
-        }
+        assertEquals(WasteLogConstants.COLLECTION_END_TIME_BEFORE_START_TIME, exception.getMessage());
+        verify(wasteLogRepository, times(1)).findByWorkerIdAndCollectionEndTimeIsNull(request.getWorkerId());
+        verify(wasteLogRepository, never()).save(any(WasteLog.class)); // Ensure save is not called
     }
 
-    @Test
-    @DisplayName("shouldThrowResourceNotFoundExceptionWhenLogNotFound: Ending a non-existent log should throw exception")
-    void shouldThrowResourceNotFoundExceptionWhenLogNotFound() {
-        // Given
-        WasteLogUpdateRequestDTO request = new WasteLogUpdateRequestDTO(999L, 100.0);
-
-        // When
-        when(wasteLogRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // Then
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
-                wasteLogService.endCollection(request)
-        );
-
-        String expectedMessage = String.format(WasteLogConstants.WASTE_LOG_NOT_FOUND_MESSAGE, 999L);
-        assertEquals(expectedMessage, exception.getMessage());
-
-        verify(wasteLogRepository, times(1)).findById(999L);
-        verify(wasteLogRepository, never()).save(any(WasteLog.class));
-    }
+    // --- getZoneLogs Tests ---
 
     @Test
-    @DisplayName("shouldThrowLogAlreadyCompletedExceptionWhenLogAlreadyCompleted: Ending an already completed log should throw exception")
-    void shouldThrowLogAlreadyCompletedExceptionWhenLogAlreadyCompleted() {
-        // Given
-        WasteLogUpdateRequestDTO request = new WasteLogUpdateRequestDTO(1L, 100.0);
-        // Simplified WasteLog constructor for a completed log
-        WasteLog completedLog = new WasteLog();
-        completedLog.setLogId(1L);
-        completedLog.setCollectionEndTime(LocalDateTime.of(2025, 6, 20, 9, 0, 0)); // Not null
-
-        // When
-        when(wasteLogRepository.findById(1L)).thenReturn(Optional.of(completedLog));
-
-        // Then
-        LogAlreadyCompletedException exception = assertThrows(LogAlreadyCompletedException.class, () ->
-                wasteLogService.endCollection(request)
-        );
-
-        String expectedMessage = String.format(WasteLogConstants.LOG_ALREADY_COMPLETED_MESSAGE, 1L);
-        assertEquals(expectedMessage, exception.getMessage());
-
-        verify(wasteLogRepository, times(1)).findById(1L);
-        verify(wasteLogRepository, never()).save(any(WasteLog.class));
-    }
-
-    @Test
-    @DisplayName("shouldThrowInvalidInputExceptionWhenEndTimeIsBeforeStartTime: End time before start time should throw exception")
-    void shouldThrowInvalidInputExceptionWhenEndTimeIsBeforeStartTime() {
-        // Given
-        WasteLogUpdateRequestDTO request = new WasteLogUpdateRequestDTO(1L, 100.0);
-        // Simulate a log whose start time is in the future relative to our mocked FIXED_NOW (10:00:00)
-        WasteLog existingLog = new WasteLog();
-        existingLog.setLogId(1L);
-        existingLog.setCollectionStartTime(LocalDateTime.of(2025, 6, 20, 11, 0, 0)); // Start time is 11:00:00
-
-        // When
-        when(wasteLogRepository.findById(1L)).thenReturn(Optional.of(existingLog));
-
-        try (MockedStatic<LocalDateTime> mockedLocalDateTime = mockStatic(LocalDateTime.class)) {
-            mockedLocalDateTime.when(LocalDateTime::now).thenReturn(FIXED_NOW); // FIXED_NOW is 10:00:00
-
-            // Then
-            InvalidInputException exception = assertThrows(InvalidInputException.class, () ->
-                    wasteLogService.endCollection(request)
-            );
-
-            assertEquals(WasteLogConstants.COLLECTION_END_TIME_BEFORE_START_TIME, exception.getMessage());
-
-            verify(wasteLogRepository, times(1)).findById(1L);
-            verify(wasteLogRepository, never()).save(any(WasteLog.class));
-        }
-    }
-
-    // --- 3. getZoneLogs Tests (Updated for Pageable and Page return) ---
-
-    @Test
-    @DisplayName("shouldReturnPaginatedZoneReportsForCompletedLogs: Should correctly aggregate and paginate completed logs for zone")
-    void shouldReturnPaginatedZoneReportsForCompletedLogs() {
-        // Given
+    @DisplayName("getZoneLogs: Should return a paginated list of zone reports for valid date range")
+    void getZoneLogs_ValidDateRange_ReturnsPaginatedReports() {
+        
         String zoneId = "Z001";
-        LocalDate startDate = LocalDate.of(2025, 6, 18);
-        LocalDate endDate = LocalDate.of(2025, 6, 20);
-        Pageable pageable = PageRequest.of(0, 2, Sort.by("date").ascending()); // Request page 0, size 2
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 1, 3);
+        Pageable pageable = PageRequest.of(0, 5);
 
-        List<WasteLog> mockLogs = Arrays.asList(
-                // Day 1 (June 18): 2 completed logs, 2 unique vehicles, total 120.0kg
-                createWasteLog(1L, zoneId, "RT001", "W001", LocalDate.of(2025, 6, 18), 50.0),
-                createWasteLog(2L, zoneId, "RT002", "W002", LocalDate.of(2025, 6, 18), 70.0),
-                // Day 2 (June 19): 1 completed log, 1 unique vehicle, total 60.0kg
-                createWasteLog(3L, zoneId, "RT001", "W001", LocalDate.of(2025, 6, 19), 60.0),
-                new WasteLog(4L, zoneId, "RT003", "W003", LocalDateTime.of(2025, 6, 19, 11, 0, 0), null, null, LocalDateTime.now(), "user", null, null), // Active log (should be ignored)
-                // Day 3 (June 20): 1 completed log, 1 unique vehicle, total 80.0kg
-                createWasteLog(5L, zoneId, "RT004", "W004", LocalDate.of(2025, 6, 20), 80.0)
-        );
+        
+        WasteLog log1 = new WasteLog();
+        log1.setLogId(1L); log1.setZoneId("Z001"); log1.setVehicleId("RT001"); log1.setWorkerId("W001");
+        log1.setCollectionStartTime(LocalDateTime.of(2024, 1, 1, 9, 0));
+        log1.setCollectionEndTime(LocalDateTime.of(2024, 1, 1, 10, 0));
+        log1.setWeightCollected(100.0);
+        log1.setCreatedDate(LocalDateTime.of(2024, 1, 1, 8, 0)); 
+        WasteLog log2 = new WasteLog();
+        log2.setLogId(2L); log2.setZoneId("Z001"); log2.setVehicleId("PT001"); log2.setWorkerId("W002");
+        log2.setCollectionStartTime(LocalDateTime.of(2024, 1, 1, 11, 0));
+        log2.setCollectionEndTime(LocalDateTime.of(2024, 1, 1, 12, 0));
+        log2.setWeightCollected(150.0);
+        log2.setCreatedDate(LocalDateTime.of(2024, 1, 1, 10, 0));
 
-        // When
-        when(wasteLogRepository.findByZoneIdAndCollectionStartTimeBetween(
-                eq(zoneId), eq(startDate.atStartOfDay()), eq(endDate.atTime(LocalTime.MAX))))
-                .thenReturn(mockLogs);
+        WasteLog log3 = new WasteLog();
+        log3.setLogId(3L); log3.setZoneId("Z001"); log3.setVehicleId("RT002"); log3.setWorkerId("W003");
+        log3.setCollectionStartTime(LocalDateTime.of(2024, 1, 2, 9, 0));
+        log3.setCollectionEndTime(LocalDateTime.of(2024, 1, 2, 10, 0));
+        log3.setWeightCollected(200.0);
+        log3.setCreatedDate(LocalDateTime.of(2024, 1, 2, 8, 0));
 
-        Page<ZoneReportDTO> resultPage = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable);
+        WasteLog log4 = new WasteLog();
+        log4.setLogId(4L); log4.setZoneId("Z001"); log4.setVehicleId("RT001"); log4.setWorkerId("W001");
+        log4.setCollectionStartTime(LocalDateTime.of(2024, 1, 3, 9, 0));
+        log4.setCollectionEndTime(LocalDateTime.of(2024, 1, 3, 10, 0));
+        log4.setWeightCollected(50.0);
+        log4.setCreatedDate(LocalDateTime.of(2024, 1, 3, 8, 0));
 
-        // Then
-        assertNotNull(resultPage);
-        assertEquals(2, resultPage.getContent().size()); // Expect 2 elements on page 0 (because page size is 2)
-        assertEquals(2, resultPage.getTotalPages()); // 3 aggregated reports (Day 1, Day 2, Day 3) / page size 2 = 1.5 -> 2 pages
-        assertEquals(3, resultPage.getTotalElements()); // 3 aggregated reports in total (not 5 original logs)
-        assertEquals(0, resultPage.getNumber()); // Current page is 0
-        assertEquals(2, resultPage.getSize()); // Page size requested is 2
-        assertTrue(resultPage.isFirst());
-        assertFalse(resultPage.isLast());
+       
+        WasteLog log5Incomplete = new WasteLog();
+        log5Incomplete.setLogId(5L); log5Incomplete.setZoneId("Z001"); log5Incomplete.setVehicleId("RT003"); log5Incomplete.setWorkerId("W004");
+        log5Incomplete.setCollectionStartTime(LocalDateTime.of(2024, 1, 3, 11, 0));
+        log5Incomplete.setCollectionEndTime(null);
+        log5Incomplete.setWeightCollected(0.0);
+        log5Incomplete.setCreatedDate(LocalDateTime.of(2024, 1, 3, 10, 0));
 
-        // Verify content and order of the first page (sorted by date)
-        ZoneReportDTO day1Report = resultPage.getContent().get(0);
-        assertEquals(zoneId, day1Report.getZoneId());
-        assertEquals(LocalDate.of(2025, 6, 18), day1Report.getDate());
-        assertEquals(2L, day1Report.getTotalNumberOfCollections()); // RT001, RT002
-        assertEquals(120.0, day1Report.getTotalWeightCollectedKg(), 0.001); // 50 + 70
 
-        ZoneReportDTO day2Report = resultPage.getContent().get(1);
-        assertEquals(zoneId, day2Report.getZoneId());
-        assertEquals(LocalDate.of(2025, 6, 19), day2Report.getDate());
-        assertEquals(1L, day2Report.getTotalNumberOfCollections()); // RT001
-        assertEquals(60.0, day2Report.getTotalWeightCollectedKg(), 0.001);
+        List<WasteLog> allLogs = Arrays.asList(log1, log2, log3, log4, log5Incomplete);
 
-        verify(wasteLogRepository, times(1))
-                .findByZoneIdAndCollectionStartTimeBetween(zoneId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
-    }
-
-    @Test
-    @DisplayName("shouldReturnEmptyPageWhenNoCompletedLogsFoundForZone: No completed logs should return empty page")
-    void shouldReturnEmptyPageWhenNoCompletedLogsFoundForZone() {
-        // Given
-        String zoneId = "Z002";
-        LocalDate startDate = LocalDate.of(2025, 1, 1);
-        LocalDate endDate = LocalDate.of(2025, 1, 31);
-        Pageable pageable = PageRequest.of(0, 10);
-
-        // When
         when(wasteLogRepository.findByZoneIdAndCollectionStartTimeBetween(
                 eq(zoneId), any(LocalDateTime.class), any(LocalDateTime.class)))
-                .thenReturn(Collections.emptyList()); // No logs found
+                .thenReturn(allLogs);
 
         Page<ZoneReportDTO> resultPage = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable);
 
-        // Then
+       
+        assertNotNull(resultPage);
+        assertEquals(3, resultPage.getTotalElements()); // 3 unique dates with completed logs
+        assertEquals(1, resultPage.getTotalPages());
+        assertEquals(3, resultPage.getContent().size());
+
+        ZoneReportDTO report1 = resultPage.getContent().get(0);
+        assertEquals(LocalDate.of(2024, 1, 1), report1.getDate());
+        assertEquals("Z001", report1.getZoneId());
+        assertEquals(2L, report1.getTotalNumberOfCollections()); // RT001, PT001
+        assertEquals(250.0, report1.getTotalWeightCollectedKg());
+
+        ZoneReportDTO report2 = resultPage.getContent().get(1);
+        assertEquals(LocalDate.of(2024, 1, 2), report2.getDate());
+        assertEquals("Z001", report2.getZoneId());
+        assertEquals(1L, report2.getTotalNumberOfCollections()); // RT002
+        assertEquals(200.0, report2.getTotalWeightCollectedKg());
+
+        ZoneReportDTO report3 = resultPage.getContent().get(2);
+        assertEquals(LocalDate.of(2024, 1, 3), report3.getDate());
+        assertEquals("Z001", report3.getZoneId());
+        assertEquals(1L, report3.getTotalNumberOfCollections()); // RT001 (incomplete log not counted)
+        assertEquals(50.0, report3.getTotalWeightCollectedKg());
+
+        verify(wasteLogRepository, times(1)).findByZoneIdAndCollectionStartTimeBetween(
+                eq(zoneId), any(LocalDateTime.class), any(LocalDateTime.class));
+    }
+
+    @Test
+    @DisplayName("getZoneLogs: Should return empty page if no logs found")
+    void getZoneLogs_NoLogsFound_ReturnsEmptyPage() {
+       
+        String zoneId = "Z005";
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 1, 3);
+        Pageable pageable = PageRequest.of(0, 5);
+
+        when(wasteLogRepository.findByZoneIdAndCollectionStartTimeBetween(
+                eq(zoneId), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+
+        
+        Page<ZoneReportDTO> resultPage = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable);
+
+       
         assertNotNull(resultPage);
         assertTrue(resultPage.isEmpty());
         assertEquals(0, resultPage.getTotalElements());
         assertEquals(0, resultPage.getTotalPages());
-        assertEquals(0, resultPage.getContent().size());
-        verify(wasteLogRepository, times(1))
-                .findByZoneIdAndCollectionStartTimeBetween(zoneId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
+        verify(wasteLogRepository, times(1)).findByZoneIdAndCollectionStartTimeBetween(
+                eq(zoneId), any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @Test
-    @DisplayName("shouldThrowInvalidInputExceptionWhenStartDateIsAfterEndDateForZoneReports: Invalid date range should throw exception")
-    void shouldThrowInvalidInputExceptionWhenStartDateIsAfterEndDateForZoneReports() {
-        // Given
+    @DisplayName("getZoneLogs: Should throw InvalidInputException if start date is after end date")
+    void getZoneLogs_InvalidDateRange_ThrowsInvalidInputException() {
+        
         String zoneId = "Z001";
-        LocalDate startDate = LocalDate.of(2025, 6, 20);
-        LocalDate endDate = LocalDate.of(2025, 6, 18); // Start after End
-        Pageable pageable = PageRequest.of(0, 10);
+        LocalDate startDate = LocalDate.of(2024, 1, 5);
+        LocalDate endDate = LocalDate.of(2024, 1, 1);
+        Pageable pageable = PageRequest.of(0, 5);
 
-        // When / Then
-        InvalidInputException exception = assertThrows(InvalidInputException.class, () ->
-                wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable)
-        );
+       
+        InvalidInputException exception = assertThrows(InvalidInputException.class,
+                () -> wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable));
 
         assertEquals(WasteLogConstants.END_DATE_CANNOT_BE_BEFORE_START_DATE, exception.getMessage());
-        verify(wasteLogRepository, never()).findByZoneIdAndCollectionStartTimeBetween(anyString(), any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(wasteLogRepository, never()).findByZoneIdAndCollectionStartTimeBetween(
+                anyString(), any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
-    // --- 4. getVehicleLogs Tests ---
+    @Test
+    @DisplayName("getZoneLogs: Should handle pagination correctly for ZoneReportDTO")
+    void getZoneLogs_PaginationHandledCorrectly() {
+      
+        String zoneId = "Z001";
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 1, 5);
+        Pageable pageable = PageRequest.of(0, 1); // Requesting 1 item per page
+
+        WasteLog log1 = new WasteLog();
+        log1.setLogId(1L); log1.setZoneId("Z001"); log1.setVehicleId("RT001"); log1.setWorkerId("W001");
+        log1.setCollectionStartTime(LocalDateTime.of(2024, 1, 1, 9, 0));
+        log1.setCollectionEndTime(LocalDateTime.of(2024, 1, 1, 10, 0));
+        log1.setWeightCollected(100.0);
+        log1.setCreatedDate(LocalDateTime.of(2024, 1, 1, 8, 0));
+
+        WasteLog log2 = new WasteLog();
+        log2.setLogId(2L); log2.setZoneId("Z001"); log2.setVehicleId("PT001"); log2.setWorkerId("W002");
+        log2.setCollectionStartTime(LocalDateTime.of(2024, 1, 2, 11, 0));
+        log2.setCollectionEndTime(LocalDateTime.of(2024, 1, 2, 12, 0));
+        log2.setWeightCollected(150.0);
+        log2.setCreatedDate(LocalDateTime.of(2024, 1, 2, 10, 0));
+
+        WasteLog log3 = new WasteLog();
+        log3.setLogId(3L); log3.setZoneId("Z001"); log3.setVehicleId("RT002"); log3.setWorkerId("W003");
+        log3.setCollectionStartTime(LocalDateTime.of(2024, 1, 3, 9, 0));
+        log3.setCollectionEndTime(LocalDateTime.of(2024, 1, 3, 10, 0));
+        log3.setWeightCollected(200.0);
+        log3.setCreatedDate(LocalDateTime.of(2024, 1, 3, 8, 0));
+
+        List<WasteLog> allLogs = Arrays.asList(log1, log2, log3);
+
+        when(wasteLogRepository.findByZoneIdAndCollectionStartTimeBetween(
+                eq(zoneId), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(allLogs);
+
+        // Act - Page 0
+        Page<ZoneReportDTO> resultPage0 = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable);
+
+        // Assert - Page 0
+        assertNotNull(resultPage0);
+        assertEquals(3, resultPage0.getTotalElements());
+        assertEquals(3, resultPage0.getTotalPages());
+        assertEquals(1, resultPage0.getContent().size());
+        assertEquals(LocalDate.of(2024, 1, 1), resultPage0.getContent().get(0).getDate());
+
+        // Act - Page 1
+        pageable = PageRequest.of(1, 1);
+        Page<ZoneReportDTO> resultPage1 = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable);
+
+        // Assert - Page 1
+        assertNotNull(resultPage1);
+        assertEquals(3, resultPage1.getTotalElements());
+        assertEquals(3, resultPage1.getTotalPages());
+        assertEquals(1, resultPage1.getContent().size());
+        assertEquals(LocalDate.of(2024, 1, 2), resultPage1.getContent().get(0).getDate());
+
+        // Act - Page 2
+        pageable = PageRequest.of(2, 1);
+        Page<ZoneReportDTO> resultPage2 = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable);
+
+        // Assert - Page 2
+        assertNotNull(resultPage2);
+        assertEquals(3, resultPage2.getTotalElements());
+        assertEquals(3, resultPage2.getTotalPages());
+        assertEquals(1, resultPage2.getContent().size());
+        assertEquals(LocalDate.of(2024, 1, 3), resultPage2.getContent().get(0).getDate());
+
+        // Act - Page out of bounds
+        pageable = PageRequest.of(3, 1);
+        Page<ZoneReportDTO> resultPageOutOfBounds = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable);
+
+        // Assert - Page out of bounds
+        assertNotNull(resultPageOutOfBounds);
+        assertTrue(resultPageOutOfBounds.isEmpty());
+        assertEquals(3, resultPageOutOfBounds.getTotalElements()); // Total elements should still be correct
+        assertEquals(3, resultPageOutOfBounds.getTotalPages());
+    }
+
+
+    // --- getVehicleLogs Tests ---
 
     @Test
-    @DisplayName("shouldReturnPaginatedVehicleReportsForCompletedLogs: Should return all completed logs for vehicle, paginated and sorted")
-    void shouldReturnPaginatedVehicleReportsForCompletedLogs() {
-        // Given
+    @DisplayName("getVehicleLogs: Should return a paginated list of vehicle reports for valid date range")
+    void getVehicleLogs_ValidDateRange_ReturnsPaginatedReports() {
+        // Arrange
         String vehicleId = "RT001";
-        LocalDate startDate = LocalDate.of(2025, 6, 18);
-        LocalDate endDate = LocalDate.of(2025, 6, 20);
-        Pageable pageable = PageRequest.of(0, 2, Sort.by("collectionDate").ascending()); // Request page 0, size 2
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 1, 3);
+        Pageable pageable = PageRequest.of(0, 5);
 
-        List<WasteLog> mockLogs = Arrays.asList(
-                createWasteLog(1L, "Z001", vehicleId, "W001", LocalDate.of(2025, 6, 18), 50.0), // Log 1
-                createWasteLog(2L, "Z002", vehicleId, "W001", LocalDate.of(2025, 6, 19), 75.0), // Log 2
-                new WasteLog(3L, "Z003", vehicleId, "W002", LocalDateTime.of(2025, 6, 20, 11, 0, 0), null, null, LocalDateTime.now(), "user", null, null), // Active log, should be ignored
-                createWasteLog(4L, "Z001", vehicleId, "W001", LocalDate.of(2025, 6, 20), 60.0) // Log 3
-        );
+        WasteLog log1 = new WasteLog();
+        log1.setLogId(1L); log1.setZoneId("Z001"); log1.setVehicleId("RT001"); log1.setWorkerId("W001");
+        log1.setCollectionStartTime(LocalDateTime.of(2024, 1, 1, 9, 0));
+        log1.setCollectionEndTime(LocalDateTime.of(2024, 1, 1, 10, 0));
+        log1.setWeightCollected(100.0);
+        log1.setCreatedDate(LocalDateTime.of(2024, 1, 1, 8, 0));
 
-        // When
-        when(wasteLogRepository.findByVehicleIdAndCollectionStartTimeBetween(
-                eq(vehicleId), eq(startDate.atStartOfDay()), eq(endDate.atTime(LocalTime.MAX))))
-                .thenReturn(mockLogs);
+        WasteLog log2 = new WasteLog();
+        log2.setLogId(2L); log2.setZoneId("Z002"); log2.setVehicleId("RT001"); log2.setWorkerId("W002");
+        log2.setCollectionStartTime(LocalDateTime.of(2024, 1, 2, 11, 0));
+        log2.setCollectionEndTime(LocalDateTime.of(2024, 1, 2, 12, 0));
+        log2.setWeightCollected(150.0);
+        log2.setCreatedDate(LocalDateTime.of(2024, 1, 2, 10, 0));
 
-        Page<VehicleReportDTO> resultPage = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable);
+        WasteLog log3 = new WasteLog();
+        log3.setLogId(3L); log3.setZoneId("Z001"); log3.setVehicleId("RT001"); log3.setWorkerId("W003");
+        log3.setCollectionStartTime(LocalDateTime.of(2024, 1, 3, 9, 0));
+        log3.setCollectionEndTime(LocalDateTime.of(2024, 1, 3, 10, 0));
+        log3.setWeightCollected(50.0);
+        log3.setCreatedDate(LocalDateTime.of(2024, 1, 3, 8, 0));
 
-        // Then
-        assertNotNull(resultPage);
-        assertEquals(2, resultPage.getContent().size()); // Expect 2 elements on page 0
-        assertEquals(2, resultPage.getTotalPages()); // 3 completed logs / page size 2 = 1.5 -> 2 pages
-        assertEquals(3, resultPage.getTotalElements()); // 3 completed logs in total
-        assertEquals(0, resultPage.getNumber()); // Current page is 0
-        assertEquals(2, resultPage.getSize()); // Page size requested is 2
-        assertTrue(resultPage.isFirst());
-        assertFalse(resultPage.isLast());
+        // Incomplete log
+        WasteLog log4Incomplete = new WasteLog();
+        log4Incomplete.setLogId(4L); log4Incomplete.setZoneId("Z003"); log4Incomplete.setVehicleId("RT001"); log4Incomplete.setWorkerId("W004");
+        log4Incomplete.setCollectionStartTime(LocalDateTime.of(2024, 1, 3, 11, 0));
+        log4Incomplete.setCollectionEndTime(null);
+        log4Incomplete.setWeightCollected(0.0);
+        log4Incomplete.setCreatedDate(LocalDateTime.of(2024, 1, 3, 10, 0));
 
+        List<WasteLog> allLogs = Arrays.asList(log1, log2, log3, log4Incomplete);
 
-        // Verify content and order of the first page (sorted by collectionDate)
-        assertEquals(LocalDate.of(2025, 6, 18), resultPage.getContent().get(0).getCollectionDate());
-        assertEquals("Z001", resultPage.getContent().get(0).getZoneId());
-        assertEquals(50.0, resultPage.getContent().get(0).getWeightCollected(), 0.001);
-
-        assertEquals(LocalDate.of(2025, 6, 19), resultPage.getContent().get(1).getCollectionDate());
-        assertEquals("Z002", resultPage.getContent().get(1).getZoneId());
-        assertEquals(75.0, resultPage.getContent().get(1).getWeightCollected(), 0.001);
-
-        verify(wasteLogRepository, times(1))
-                .findByVehicleIdAndCollectionStartTimeBetween(vehicleId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
-    }
-
-    @Test
-    @DisplayName("shouldReturnEmptyPageWhenNoCompletedLogsFoundForVehicle: No completed logs should return empty page")
-    void shouldReturnEmptyPageWhenNoCompletedLogsFoundForVehicle() {
-        // Given
-        String vehicleId = "PT001";
-        LocalDate startDate = LocalDate.of(2025, 2, 1);
-        LocalDate endDate = LocalDate.of(2025, 2, 28);
-        Pageable pageable = PageRequest.of(0, 10);
-
-        // When
         when(wasteLogRepository.findByVehicleIdAndCollectionStartTimeBetween(
                 eq(vehicleId), any(LocalDateTime.class), any(LocalDateTime.class)))
-                .thenReturn(Collections.emptyList()); // No logs found
+                .thenReturn(allLogs);
 
+        // Act
         Page<VehicleReportDTO> resultPage = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable);
 
-        // Then
+        // Assert
+        assertNotNull(resultPage);
+        assertEquals(3, resultPage.getTotalElements()); // Only completed logs
+        assertEquals(1, resultPage.getTotalPages());
+        assertEquals(3, resultPage.getContent().size());
+
+        VehicleReportDTO report1 = resultPage.getContent().get(0);
+        assertEquals("RT001", report1.getVehicleId());
+        assertEquals("Z001", report1.getZoneId());
+        assertEquals(100.0, report1.getWeightCollected());
+        assertEquals(LocalDate.of(2024, 1, 1), report1.getCollectionDate());
+
+        VehicleReportDTO report2 = resultPage.getContent().get(1);
+        assertEquals("RT001", report2.getVehicleId());
+        assertEquals("Z002", report2.getZoneId());
+        assertEquals(150.0, report2.getWeightCollected());
+        assertEquals(LocalDate.of(2024, 1, 2), report2.getCollectionDate());
+
+        VehicleReportDTO report3 = resultPage.getContent().get(2);
+        assertEquals("RT001", report3.getVehicleId());
+        assertEquals("Z001", report3.getZoneId());
+        assertEquals(50.0, report3.getWeightCollected());
+        assertEquals(LocalDate.of(2024, 1, 3), report3.getCollectionDate());
+
+        verify(wasteLogRepository, times(1)).findByVehicleIdAndCollectionStartTimeBetween(
+                eq(vehicleId), any(LocalDateTime.class), any(LocalDateTime.class));
+    }
+
+    @Test
+    @DisplayName("getVehicleLogs: Should return empty page if no logs found")
+    void getVehicleLogs_NoLogsFound_ReturnsEmptyPage() {
+        // Arrange
+        String vehicleId = "PT005";
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 1, 3);
+        Pageable pageable = PageRequest.of(0, 5);
+
+        when(wasteLogRepository.findByVehicleIdAndCollectionStartTimeBetween(
+                eq(vehicleId), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        Page<VehicleReportDTO> resultPage = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable);
+
+        // Assert
         assertNotNull(resultPage);
         assertTrue(resultPage.isEmpty());
         assertEquals(0, resultPage.getTotalElements());
         assertEquals(0, resultPage.getTotalPages());
-        assertEquals(0, resultPage.getContent().size());
-        verify(wasteLogRepository, times(1))
-                .findByVehicleIdAndCollectionStartTimeBetween(vehicleId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
+        verify(wasteLogRepository, times(1)).findByVehicleIdAndCollectionStartTimeBetween(
+                eq(vehicleId), any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @Test
-    @DisplayName("shouldThrowInvalidInputExceptionWhenStartDateIsAfterEndDateForVehicleReports: Invalid date range should throw exception")
-    void shouldThrowInvalidInputExceptionWhenStartDateIsAfterEndDateForVehicleReports() {
-        // Given
+    @DisplayName("getVehicleLogs: Should throw InvalidInputException if start date is after end date")
+    void getVehicleLogs_InvalidDateRange_ThrowsInvalidInputException() {
+        // Arrange
         String vehicleId = "RT001";
-        LocalDate startDate = LocalDate.of(2025, 6, 20);
-        LocalDate endDate = LocalDate.of(2025, 6, 18); // Start after End
-        Pageable pageable = PageRequest.of(0, 10);
+        LocalDate startDate = LocalDate.of(2024, 1, 5);
+        LocalDate endDate = LocalDate.of(2024, 1, 1);
+        Pageable pageable = PageRequest.of(0, 5);
 
-        // When / Then
-        InvalidInputException exception = assertThrows(InvalidInputException.class, () ->
-                wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable)
-        );
+        // Act & Assert
+        InvalidInputException exception = assertThrows(InvalidInputException.class,
+                () -> wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable));
 
         assertEquals(WasteLogConstants.END_DATE_CANNOT_BE_BEFORE_START_DATE, exception.getMessage());
-        verify(wasteLogRepository, never()).findByVehicleIdAndCollectionStartTimeBetween(anyString(), any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(wasteLogRepository, never()).findByVehicleIdAndCollectionStartTimeBetween(
+                anyString(), any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
-    // Helper method to create a completed WasteLog for reporting tests
-    // Assuming WasteLog has a constructor or setters for these fields
-    private WasteLog createWasteLog(Long id, String zoneId, String vehicleId, String workerId, LocalDate collectionDate, double weight) {
-        WasteLog log = new WasteLog();
-        log.setLogId(id);
-        log.setZoneId(zoneId);
-        log.setVehicleId(vehicleId);
-        log.setWorkerId(workerId);
-        // Set start time slightly before end time for a completed log
-        log.setCollectionStartTime(collectionDate.atTime(8, 0));
-        log.setCollectionEndTime(collectionDate.atTime(9, 0));
-        log.setWeightCollected(weight);
-        log.setCreatedDate(collectionDate.atStartOfDay());
-        // For simplicity, updatedDate, createdBy, updatedBy are not set in this helper
-        return log;
+    @Test
+    @DisplayName("getVehicleLogs: Should handle pagination correctly for VehicleReportDTO")
+    void getVehicleLogs_PaginationHandledCorrectly() {
+        // Arrange
+        String vehicleId = "RT001";
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 1, 5);
+        Pageable pageable = PageRequest.of(0, 1); // Requesting 1 item per page
+
+        WasteLog log1 = new WasteLog();
+        log1.setLogId(1L); log1.setZoneId("Z001"); log1.setVehicleId("RT001"); log1.setWorkerId("W001");
+        log1.setCollectionStartTime(LocalDateTime.of(2024, 1, 1, 9, 0));
+        log1.setCollectionEndTime(LocalDateTime.of(2024, 1, 1, 10, 0));
+        log1.setWeightCollected(100.0);
+        log1.setCreatedDate(LocalDateTime.of(2024, 1, 1, 8, 0));
+
+        WasteLog log2 = new WasteLog();
+        log2.setLogId(2L); log2.setZoneId("Z002"); log2.setVehicleId("RT001"); log2.setWorkerId("W002");
+        log2.setCollectionStartTime(LocalDateTime.of(2024, 1, 2, 11, 0));
+        log2.setCollectionEndTime(LocalDateTime.of(2024, 1, 2, 12, 0));
+        log2.setWeightCollected(150.0);
+        log2.setCreatedDate(LocalDateTime.of(2024, 1, 2, 10, 0));
+
+        WasteLog log3 = new WasteLog();
+        log3.setLogId(3L); log3.setZoneId("Z001"); log3.setVehicleId("RT001"); log3.setWorkerId("W003");
+        log3.setCollectionStartTime(LocalDateTime.of(2024, 1, 3, 9, 0));
+        log3.setCollectionEndTime(LocalDateTime.of(2024, 1, 3, 10, 0));
+        log3.setWeightCollected(50.0);
+        log3.setCreatedDate(LocalDateTime.of(2024, 1, 3, 8, 0));
+
+        List<WasteLog> allLogs = Arrays.asList(log1, log2, log3);
+
+        when(wasteLogRepository.findByVehicleIdAndCollectionStartTimeBetween(
+                eq(vehicleId), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(allLogs);
+
+        // Act - Page 0
+        Page<VehicleReportDTO> resultPage0 = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable);
+
+        // Assert - Page 0
+        assertNotNull(resultPage0);
+        assertEquals(3, resultPage0.getTotalElements());
+        assertEquals(3, resultPage0.getTotalPages());
+        assertEquals(1, resultPage0.getContent().size());
+        assertEquals(LocalDate.of(2024, 1, 1), resultPage0.getContent().get(0).getCollectionDate());
+
+        // Act - Page 1
+        pageable = PageRequest.of(1, 1);
+        Page<VehicleReportDTO> resultPage1 = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable);
+
+        // Assert - Page 1
+        assertNotNull(resultPage1);
+        assertEquals(3, resultPage1.getTotalElements());
+        assertEquals(3, resultPage1.getTotalPages());
+        assertEquals(1, resultPage1.getContent().size());
+        assertEquals(LocalDate.of(2024, 1, 2), resultPage1.getContent().get(0).getCollectionDate());
+
+        // Act - Page 2
+        pageable = PageRequest.of(2, 1);
+        Page<VehicleReportDTO> resultPage2 = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable);
+
+        // Assert - Page 2
+        assertNotNull(resultPage2);
+        assertEquals(3, resultPage2.getTotalElements());
+        assertEquals(3, resultPage2.getTotalPages());
+        assertEquals(1, resultPage2.getContent().size());
+        assertEquals(LocalDate.of(2024, 1, 3), resultPage2.getContent().get(0).getCollectionDate());
+
+        // Act - Page out of bounds
+        pageable = PageRequest.of(3, 1);
+        Page<VehicleReportDTO> resultPageOutOfBounds = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable);
+
+        // Assert - Page out of bounds
+        assertNotNull(resultPageOutOfBounds);
+        assertTrue(resultPageOutOfBounds.isEmpty());
+        assertEquals(3, resultPageOutOfBounds.getTotalElements()); // Total elements should still be correct
+        assertEquals(3, resultPageOutOfBounds.getTotalPages());
     }
 }

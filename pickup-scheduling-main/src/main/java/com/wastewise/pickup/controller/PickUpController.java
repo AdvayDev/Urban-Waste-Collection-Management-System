@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,11 +48,13 @@ public class PickUpController {
     private final PickUpService pickUpService;
 
     /**
+     * Accessed By: Scheduler
      * Creates a new PickUp resource.
      *
      * @param dto the DTO containing the PickUp creation details
      * @return a ResponseEntity containing the ID of the created PickUp and HTTP status 201 (Created)
      */
+    @PreAuthorize("hasRole('SCHEDULER')")
     @PostMapping
     public ResponseEntity<String> createPickUp(@Valid @RequestBody CreatePickUpDto dto) {
         log.info("POST - /wastewise/scheduler/pickups - payload: {}", dto);
@@ -62,11 +65,13 @@ public class PickUpController {
     }
 
     /**
+     * Accessed By: Scheduler
      * Deletes an existing PickUp resource by its ID.
      *
      * @param id the ID of the PickUp to delete
      * @return a ResponseEntity containing a success message and HTTP status 200 (OK)
      */
+    @PreAuthorize("hasRole('SCHEDULER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePickUp(@PathVariable String id) {
         log.info("DELETE /wastewise/scheduler/pickups/{}", id);
@@ -77,10 +82,12 @@ public class PickUpController {
     }
 
     /**
+     * Accessed By: Scheduler
      * Retrieves all existing PickUp resources.
      *
      * @return a ResponseEntity containing a list of all PickUp DTOs and HTTP status 200 (OK)
      */
+    @PreAuthorize("hasRole('SCHEDULER')")
     @GetMapping
     public ResponseEntity<List<PickUpDto>> listAllPickUps() {
         log.info("GET /wastewise/scheduler/pickups");
@@ -90,11 +97,13 @@ public class PickUpController {
     }
 
     /**
+     * Accessed By: Scheduler
      * Retrieves a specific PickUp resource by its ID.
      *
      * @param id the ID of the PickUp to retrieve
      * @return a ResponseEntity containing the PickUp DTO and HTTP status 200 (OK)
      */
+    @PreAuthorize("hasRole('SCHEDULER')")
     @GetMapping("/{id}")
     public ResponseEntity<PickUpDto> getPickUpById(@PathVariable String id) {
         log.info("GET /wastewise/scheduler/pickups/{}", id);
@@ -102,4 +111,15 @@ public class PickUpController {
         log.debug("Fetched PickUp: {}", dto);
         return ResponseEntity.ok(dto);
     }
+
+    /**
+     * Accessed By: Sanitary Worker
+     * Retrieve all the information regarding pickup information of worker with id
+     * @param id workerId of worker
+     * @return dto that consist of pickup information such as pickup location, zone, vehicle, time slot, frequency
+     *
+     * Add
+     * @PreAuthorize("hasRole('SANITARY_WORKER')")
+     * @GetMapping("/pickupinfo/{id}")
+     */
 }

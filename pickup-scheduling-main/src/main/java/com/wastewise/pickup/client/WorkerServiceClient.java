@@ -12,8 +12,8 @@ import java.util.List;
 
 @FeignClient(name = "worker-service")
 public interface WorkerServiceClient {
-    @GetMapping("/workers")
-    List<WorkerDto> getAllWorkers();
+    @GetMapping("/wastewise/admin/workers/ids")
+    List<WorkerDto> getAllWorkers(); //WorkerInfoDTO on worker-management module
 
     @GetMapping("/workers/{id}")
     WorkerDto getWorkerById(@PathVariable("id") String id);
