@@ -84,6 +84,11 @@ public class AssignmentController {
         return ResponseEntity.ok(assignmentService.updateAssignment(id, dto));
     }
 
+    /**
+     * gets all the assignments assigned to route id
+     * @param routeId
+     * @return
+     */
 
     @GetMapping("/by-route/{routeId}")
     public ResponseEntity<List<AssignmentDTO>> getAssignmentsByRouteId(@PathVariable String routeId) {
