@@ -44,6 +44,4 @@ public class AuthServiceController {
         LoginResponseDTO response = authServiceImpl.validateToken(token);
         return ResponseEntity.ok(response);
     }
-
-
 }
