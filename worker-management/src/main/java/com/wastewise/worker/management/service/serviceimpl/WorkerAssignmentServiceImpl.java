@@ -147,6 +147,7 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
         newAssignment.setCreatedDate(oldWorkerAssignment.getCreatedDate());
         newAssignment.setCreatedBy(oldWorkerAssignment.getCreatedBy());
         newAssignment.setShift(oldWorkerAssignment.getShift());
+        newAssignment.setUpdatedBy("W001");
         newAssignment.setUpdatedDate(LocalDateTime.now());
         workerAssignmentRepository.save(newAssignment);
 
