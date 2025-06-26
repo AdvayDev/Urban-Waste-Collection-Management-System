@@ -75,5 +75,14 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment updated = repository.save(existing);
         return modelMapper.map(updated, AssignmentDTO.class);
     }
-    
+
+    @Override
+    public List<AssignmentDTO> getAssignmentsByRouteId(String routeId) {
+        List<Assignment> assignments = repository.findByRouteId(routeId);
+        return assignments.stream()
+                .map(assignment -> modelMapper.map(assignment, AssignmentDTO.class))
+                .collect(Collectors.toList());
+    }
+
+
 }

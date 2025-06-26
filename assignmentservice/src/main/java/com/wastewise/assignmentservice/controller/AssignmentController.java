@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/assignments")
+@RequestMapping("wastewise/admin/assignments")
 @RequiredArgsConstructor
 @Slf4j
 public class AssignmentController {
@@ -83,5 +83,13 @@ public class AssignmentController {
         log.info("Updating assignment with ID: {}", id);
         return ResponseEntity.ok(assignmentService.updateAssignment(id, dto));
     }
+
+
+    @GetMapping("/by-route/{routeId}")
+    public ResponseEntity<List<AssignmentDTO>> getAssignmentsByRouteId(@PathVariable String routeId) {
+        log.info("Fetching assignments for route ID: {}", routeId);
+        return ResponseEntity.ok(assignmentService.getAssignmentsByRouteId(routeId));
+    }
+
 }
 
