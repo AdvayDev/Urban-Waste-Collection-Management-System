@@ -5,7 +5,7 @@ import com.wastewise.workermanagement.dto.WorkerDTO;
 import com.wastewise.workermanagement.dto.WorkerInfoDTO;
 import com.wastewise.workermanagement.dto.WorkerUpdateDTO;
 import com.wastewise.workermanagement.enums.WorkerStatus;
-import com.wastewise.workermanagement.service.serviceimpl.WorkerServiceImpl;
+import com.wastewise.workermanagement.service.WorkerService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,10 +21,10 @@ import java.util.List;
 @RequestMapping("/wastewise/admin/workers")
 public class WorkerController {
 
-    private final WorkerServiceImpl workerServiceImpl;
+    private final WorkerService workerService;
 
-    public WorkerController(WorkerServiceImpl workerServiceImpl) {
-        this.workerServiceImpl = workerServiceImpl;
+    public WorkerController(WorkerService workerService) {
+        this.workerService = workerService;
     }
 
     /**
@@ -37,7 +37,7 @@ public class WorkerController {
     @PostMapping
     public ResponseEntity<String> createWorker(@Valid @RequestBody WorkerCreateDTO dto) {
         log.info("Creating a new worker profile");
-        return ResponseEntity.ok(workerServiceImpl.createWorker(dto));
+        return ResponseEntity.ok(workerService.createWorker(dto));
     }
 
     /**
@@ -49,7 +49,7 @@ public class WorkerController {
     @GetMapping
     public ResponseEntity<List<WorkerDTO>> findAllWorkers(){
         log.info("Fetching all the workers");
-        return ResponseEntity.ok(workerServiceImpl.getAllWorkers());
+        return ResponseEntity.ok(workerService.getAllWorkers());
     }
 
     /**
@@ -62,7 +62,7 @@ public class WorkerController {
     @GetMapping("/{id}")
     public ResponseEntity<WorkerDTO> getWorker(@PathVariable String id) {
         log.info("Finding worker with id {}",id);
-        WorkerDTO worker = workerServiceImpl.getWorker(id);
+        WorkerDTO worker = workerService.getWorker(id);
         return ResponseEntity.ok(worker);
     }
 
@@ -75,7 +75,7 @@ public class WorkerController {
     @GetMapping("/ids")
     public ResponseEntity<List<String>> getAllWorkerIds() {
         log.info("fetching the list of all workerIds and names of workers that are AVAILABLE and SANITARY_WORKER");
-        return new ResponseEntity<>(workerServiceImpl.getWorkerIds(), HttpStatus.OK);
+        return new ResponseEntity<>(workerService.getWorkerIds(), HttpStatus.OK);
     }
 
     /**
@@ -87,7 +87,7 @@ public class WorkerController {
     @GetMapping("/ids/available")
     public ResponseEntity<List<WorkerInfoDTO>> getAvailableWorkerIds() {
         log.info("fetching all the available workers");
-        return ResponseEntity.ok(workerServiceImpl.getAllAvailableWorkerIds());
+        return ResponseEntity.ok(workerService.getAllAvailableWorkerIds());
     }
 
     /**
@@ -102,7 +102,7 @@ public class WorkerController {
     public ResponseEntity<String> updateWorker(@PathVariable String id,
                                                         @Valid @RequestBody WorkerUpdateDTO dto) {
         log.info("updating worker with id {}", id);
-        return ResponseEntity.ok(workerServiceImpl.updateWorker(id, dto));
+        return ResponseEntity.ok(workerService.updateWorker(id, dto));
     }
 
     /**
@@ -116,6 +116,6 @@ public class WorkerController {
     @PatchMapping("/status/{workerId}")
     public ResponseEntity<String> updateWorkerStatus(@PathVariable String workerId, @RequestBody WorkerStatus workerStatus){
         log.info("Updating the status of worker with id {} to status {}", workerId, workerStatus);
-        return ResponseEntity.ok(workerServiceImpl.changeWorkerStatus(workerId, workerStatus));
+        return ResponseEntity.ok(workerService.changeWorkerStatus(workerId, workerStatus));
     }
 }
