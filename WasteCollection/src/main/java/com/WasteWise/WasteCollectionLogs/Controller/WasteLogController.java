@@ -134,7 +134,7 @@ public class WasteLogController {
                     message = "Invalid Zone ID format. Must be Z### (e.g., Z001).") String zoneId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @PageableDefault(size=1,sort = "date", direction = Sort.Direction.ASC) Pageable pageable) { // Added Pageable with fixed sort default
+            @PageableDefault(size=10,sort = "date", direction = Sort.Direction.ASC) Pageable pageable) { // Added Pageable with fixed sort default
     	  logger.info("Received request for zone report: zoneId={}, startDate={}, endDate={}, pageable={}",
                   zoneId, startDate, endDate, pageable);
         Page<ZoneReportDTO> reportsPage = wasteLogService.getZoneLogs(zoneId, startDate, endDate, pageable); // Pass pageable
@@ -174,7 +174,7 @@ public class WasteLogController {
                     message = "Invalid Vehicle ID format. Must be RT### or PT### (e.g., RT001).") String vehicleId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @PageableDefault(size=1,sort = "collectionDate", direction = Sort.Direction.ASC) Pageable pageable) { 
+            @PageableDefault(size=10,sort = "collectionDate", direction = Sort.Direction.ASC) Pageable pageable) { 
     	 logger.info("Received request for vehicle report: vehicleId={}, startDate={}, endDate={}, pageable={}",
                  vehicleId, startDate, endDate, pageable);
         Page<VehicleReportDTO> reportsPage = wasteLogService.getVehicleLogs(vehicleId, startDate, endDate, pageable); 
