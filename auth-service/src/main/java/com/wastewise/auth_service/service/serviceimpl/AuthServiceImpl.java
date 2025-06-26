@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
 
     public LoginResponseDTO validateToken(String token) {
         Claims claims = Jwts.parser()
-                .setSigningKey("256-bit-secret-key") // Use your actual secret key
+                .setSigningKey("256-bit-secret-key-to-generate-the-encoded-message") // Use your actual secret key
                 .parseClaimsJws(token)
                 .getBody();
 

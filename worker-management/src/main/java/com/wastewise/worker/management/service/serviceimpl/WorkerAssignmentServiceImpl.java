@@ -36,7 +36,12 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
         this.workerAssignmentMapper = workerAssignmentMapper;
     }
 
+    /**
+     * Method to fetch all the existing worker assignments
+     * @return a list of worker assignment dtos consisting of assignmentId, workerId, routeId, zoneId, shift
+     */
     public List<WorkerAssignmentDTO> findAllWorkerAssignments(){
+        log.info("Fetching all the worker assignments");
         return workerAssignmentRepository.findAll()
                 .stream()
                 .map(workerAssignmentMapper::toDTO)
@@ -74,6 +79,8 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
         workerAssignmentRepository.save(assignment);
 
         worker.setWorkerStatus(WorkerStatus.OCCUPIED);
+        worker.setUpdatedDate(LocalDateTime.now());
+        worker.setUpdatedBy("W001");
         workerRepository.save(worker);
 
         log.info("Assigned worker {} to assignment {}", workerId, assignmentId);
@@ -147,7 +154,11 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
                 .orElseThrow(() -> new WorkerNotFoundException("Old worker not found"));
 
         oldWorker.setWorkerStatus(WorkerStatus.AVAILABLE);
+        oldWorker.setUpdatedBy("W001");
+        oldWorker.setUpdatedDate(LocalDateTime.now());
         newWorker.setWorkerStatus(WorkerStatus.OCCUPIED);
+        newWorker.setUpdatedBy("W001");
+        newWorker.setUpdatedDate(LocalDateTime.now());
         workerRepository.saveAll(List.of(oldWorker, newWorker));
 
         return "Worker assignment updated successfully";
@@ -209,7 +220,7 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
             newAssignment.setShift(oldAssignment.getShift());
             newAssignment.setCreatedBy(oldAssignment.getCreatedBy());
             newAssignment.setCreatedDate(oldAssignment.getCreatedDate());
-            newAssignment.setUpdatedBy("000"); // To be modified from workerId of whoever is updating
+            newAssignment.setUpdatedBy("W001"); // To be modified from workerId of whoever is updating
             newAssignment.setUpdatedDate(LocalDateTime.now());
 
             newAssignments.add(newAssignment);
@@ -222,9 +233,13 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
         List<Worker> oldWorkers = workerRepository.findAllById(oldWorkerIds);
 
         for (Worker w : oldWorkers) {
+            w.setUpdatedBy("W001");
+            w.setUpdatedDate(LocalDateTime.now());
             w.setWorkerStatus(WorkerStatus.AVAILABLE);
         }
         for (Worker w : newWorkers) {
+            w.setUpdatedBy("W001");
+            w.setUpdatedDate(LocalDateTime.now());
             w.setWorkerStatus(WorkerStatus.OCCUPIED);
         }
 
@@ -262,6 +277,8 @@ public class WorkerAssignmentServiceImpl implements com.wastewise.worker.managem
 
         List<Worker> workers = workerRepository.findAllById(workerIds);
         for (Worker worker : workers) {
+            worker.setUpdatedBy("W001");
+            worker.setUpdatedDate(LocalDateTime.now());
             worker.setWorkerStatus(WorkerStatus.AVAILABLE);
         }
         workerRepository.saveAll(workers);

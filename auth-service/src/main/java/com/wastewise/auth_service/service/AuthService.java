@@ -11,4 +11,6 @@ public interface AuthService {
     void registerWorker(RegisterWorkerDTO dto);
 
     void resetPassword(PasswordResetDTO dto);
+
+    LoginResponseDTO validateToken(String token);
 }

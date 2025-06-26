@@ -6,6 +6,7 @@ import com.wastewise.auth_service.dto.PasswordResetDTO;
 import com.wastewise.auth_service.dto.RegisterWorkerDTO;
 import com.wastewise.auth_service.service.serviceimpl.AuthServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,6 +25,7 @@ public class AuthServiceController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/internal/register-worker")
     public ResponseEntity<String> registerWorker(@RequestBody RegisterWorkerDTO dto) {
         authServiceImpl.registerWorker(dto);
@@ -42,6 +44,4 @@ public class AuthServiceController {
         LoginResponseDTO response = authServiceImpl.validateToken(token);
         return ResponseEntity.ok(response);
     }
-
-
 }

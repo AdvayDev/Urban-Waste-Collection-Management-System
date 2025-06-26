@@ -58,7 +58,7 @@ public class WorkerController {
      * @param id workerId is passed as a prameter
      * @return workerDTO object
      */
-    @PreAuthorize("hasRole('ADMIN','SANITARY_WORKER)")
+    @PreAuthorize("hasAnyRole('ADMIN','SANITARY_WORKER')")
     @GetMapping("/{id}")
     public ResponseEntity<WorkerDTO> getWorker(@PathVariable String id) {
         log.info("Finding worker with id {}",id);
@@ -80,10 +80,10 @@ public class WorkerController {
 
     /**
      *  Accessed by: Admin, Scheduler
-     * finding all the workers with status Available
+     * finding all the sanitary workers with status Available
      * @return list of workerInfoDTOs with status is available
      */
-    @PreAuthorize("hasRole('ADMIN','SCHEDULER')")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/ids/available")
     public ResponseEntity<List<WorkerInfoDTO>> getAvailableWorkerIds() {
         log.info("fetching all the available workers");
@@ -112,7 +112,7 @@ public class WorkerController {
      * @param workerStatus worker status is passed as request body
      * @return string message confirming the updating of status
      */
-    @PreAuthorize("hasRole('ADMIN','SCHEDULER')")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @PatchMapping("/status/{workerId}")
     public ResponseEntity<String> updateWorkerStatus(@PathVariable String workerId, @RequestBody WorkerStatus workerStatus){
         log.info("Updating the status of worker with id {} to status {}", workerId, workerStatus);

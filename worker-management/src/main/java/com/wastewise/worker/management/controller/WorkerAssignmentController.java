@@ -24,10 +24,12 @@ public class WorkerAssignmentController {
         this.workerAssignmentServiceImpl = workerAssignmentServiceImpl;
     }
 
-    /** Accessed by: Admin
+    /**
+     * Accessed by: Admin
      * Finding all the worker-assignments from the database
      * @return list of workerAssignmentDTO(assignmentId, workerId, routeId, zoneId, shift)
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<WorkerAssignmentDTO>> findAllWorkerAssignments(){
         log.info("fetching all the workerAssignments");
@@ -40,6 +42,7 @@ public class WorkerAssignmentController {
      * @param workerId of worker
      * @return workerAssignment DTO consist of information such as assignmentId, workerId, routeId, zoneId, Shift
      */
+    @PreAuthorize("hasRole('SANITARY_WORKER')")
     @GetMapping("/{workerId}")
     public ResponseEntity<WorkerAssignmentDTO> findWorkerAssignment(@PathVariable String workerId){
         log.info("fetching worker's assignment information");
@@ -52,6 +55,7 @@ public class WorkerAssignmentController {
      * @param assignmentId assignmentId of the assignment
      * @return String indicating successful creation of tuple
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{assignmentId}")
     public ResponseEntity<String> assignWorkerToAssignment(
             @PathVariable String assignmentId,
@@ -70,6 +74,7 @@ public class WorkerAssignmentController {
      * @param dto updateWorkerAssignDTO (OldWorkerId, newWorkerId)
      * @return String stating that the update has been executed
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{assignmentId}")
     public ResponseEntity<String> updateWorkerAssignment(
             @PathVariable String assignmentId,
@@ -85,6 +90,7 @@ public class WorkerAssignmentController {
      * @param request WorkerReassignDTO(oldWorkerId1, oldWorkerId2, newWorkerId1, newWorkerId2)
      * @return String message explaining the result
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/reassign/{assignmentId}/")
     public ResponseEntity<String> updateBothWorkerAssignments(
             @PathVariable String assignmentId,
@@ -109,6 +115,7 @@ public class WorkerAssignmentController {
      * @param assignmentId id of assignment related to which we need to delete the tuples of worker assignment
      * @return string stating that the worker assignment is deleted
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{assignmentId}")
     public ResponseEntity<String> deleteWorkerAssignment(
             @PathVariable String assignmentId) {

@@ -11,7 +11,9 @@ import java.security.Key;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "256-bit-secret-key"; // Replace with env variable in production
+    private final String SECRET_KEY = "256-bit-secret-key-to-generate-the-encoded-message"; // Replace with env variable in production
+
+    private final long expirationTime = 1000 * 60 * 60 * 10;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
