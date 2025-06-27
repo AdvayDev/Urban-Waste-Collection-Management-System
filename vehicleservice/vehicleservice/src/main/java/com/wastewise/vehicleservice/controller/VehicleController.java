@@ -7,6 +7,7 @@ import com.wastewise.vehicleservice.service.VehicleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,11 +24,13 @@ public class VehicleController {
     private VehicleService vehicleService;
 
     /**
+     * Accessed by Admin
      * Creates a new vehicle.
      *
      * @param dto the vehicle data
      * @return the created vehicle with HTTP 201 status
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<VehicleDTO> createVehicle(@RequestBody VehicleDTO dto) {
         log.info("POST /wastewise/admin/vehicle-assignments - Creating vehicle");
@@ -36,11 +39,13 @@ public class VehicleController {
     }
 
     /**
+     * Accessed by Admin
      * Retrieves a vehicle by its ID.
      *
      * @param id the vehicle ID
      * @return the vehicle data with HTTP 200 status
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<VehicleDTO> getVehicleById(@PathVariable String id) {
         log.info("GET /wastewise/admin/vehicle-assignments/{}", id);
@@ -48,10 +53,12 @@ public class VehicleController {
     }
 
     /**
+     * Accessed by Admin
      * Retrieves all vehicles.
      *
      * @return list of all vehicles with HTTP 200 status
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<VehicleDTO>> getAllVehicles() {
         log.info("GET /wastewise/admin/vehicle-assignments");
@@ -59,12 +66,14 @@ public class VehicleController {
     }
 
     /**
+     * Accessed by Admin
      * Updates an existing vehicle.
      *
      * @param id  the vehicle ID
      * @param dto the updated vehicle data
      * @return success message with HTTP 200 status
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<String> updateVehicle(@PathVariable String id, @RequestBody VehicleDTO dto) {
         log.info("PUT /wastewise/admin/vehicle-assignments/{}", id);
@@ -73,11 +82,13 @@ public class VehicleController {
     }
 
     /**
+     * Accessed by Admin
      * Deletes a vehicle by ID.
      *
      * @param id the vehicle ID
      * @return HTTP 204 No Content if deletion is successful
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteVehicle(@PathVariable String id) {
         log.info("DELETE /wastewise/admin/vehicle-assignments/{}", id);
@@ -86,10 +97,12 @@ public class VehicleController {
     }
 
     /**
+     * Accessed by Admin and Scheduler
      * Retrieves all available pickup trucks.
      *
      * @return list of available pickup trucks with HTTP 200 status
      */
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/filter/pickuptruck")
     public ResponseEntity<List<VehicleDTO>> getAvailablePickupTrucks() {
         log.info("GET /wastewise/admin/vehicle-assignments/filter/pickuptruck");
@@ -98,10 +111,12 @@ public class VehicleController {
     }
 
     /**
+     * Accessed by Admin
      * Retrieves all available route trucks.
      *
      * @return list of available route trucks with HTTP 200 status
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter/routetruck")
     public ResponseEntity<List<VehicleDTO>> getAvailableRouteTrucks() {
         log.info("GET /wastewise/admin/vehicle-assignments/filter/routetruck");
