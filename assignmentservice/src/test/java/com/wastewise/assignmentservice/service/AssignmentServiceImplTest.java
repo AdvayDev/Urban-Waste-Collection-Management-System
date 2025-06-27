@@ -140,4 +140,15 @@ class AssignmentServiceImplTest {
 
         assertThrows(ResourceNotFoundException.class, () -> service.updateAssignment("A001", assignmentDTO));
     }
+
+    @Test
+    void testGetAssignmentsByRouteId() {
+        when(repository.findByRouteId("R001")).thenReturn(List.of(assignment));
+        when(modelMapper.map(assignment, AssignmentDTO.class)).thenReturn(assignmentDTO);
+
+        List<AssignmentDTO> result = service.getAssignmentsByRouteId("R001");
+
+        assertEquals(1, result.size());
+        assertEquals("A001", result.get(0).getAssignmentId());
+    }
 }

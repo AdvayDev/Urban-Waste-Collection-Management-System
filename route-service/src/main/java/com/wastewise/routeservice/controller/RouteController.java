@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -31,11 +32,13 @@ public class RouteController {
     private static final Logger logger = LoggerFactory.getLogger(RouteController.class);
 
     /**
+     * Accessed by Admin
      * Create a new route.
      *
      * @param request Route creation data
      * @return Response with created route ID
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<RestResponse<Object>> createRoute(@Valid @RequestBody RouteCreationRequestDTO request) {
         logger.info("Received request to create route for zone: {}", request.getZoneId());
@@ -50,12 +53,14 @@ public class RouteController {
     }
 
     /**
+     * Accessed by Admin
      * Update an existing route.
      *
      * @param routeId Route ID to update
      * @param request Updated route data
      * @return Response with updated route details
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{routeId}")
     public ResponseEntity<RestResponse<Object>> updateRoute(@PathVariable String routeId,
                                                             @Valid @RequestBody RouteUpdateRequestDTO request) {
@@ -77,11 +82,13 @@ public class RouteController {
     }
 
     /**
+     * Accessed by Admin
      * Delete a route by ID.
      *
      * @param routeId ID of route to delete
      * @return Response message
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{routeId}")
     public ResponseEntity<RestResponse<Object>> deleteRoute(@PathVariable String routeId) {
         logger.info("Received request to delete route with ID: {}", routeId);
@@ -96,10 +103,12 @@ public class RouteController {
     }
 
     /**
+     * Accessed by Admin
      * Get list of all routes.
      *
      * @return List of route responses
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
     public ResponseEntity<RestResponse<Object>> getAllRoutes() {
         logger.info("Received request to fetch all routes");
@@ -114,11 +123,13 @@ public class RouteController {
     }
 
     /**
+     * Accessed by Admin
      * Get a route by ID.
      *
      * @param routeId Route ID
      * @return Route response
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{routeId}")
     public ResponseEntity<RestResponse<Object>> getRouteById(@PathVariable String routeId) {
         logger.info("Received request to fetch route with ID: {}", routeId);
@@ -133,11 +144,13 @@ public class RouteController {
     }
 
     /**
+     * Accessed by Admin
      * Get list of route IDs for a specific zone.
      *
      * @param zoneId Zone ID
      * @return List of route IDs
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/zone/{zoneId}")
     public ResponseEntity<RestResponse<Object>> getRoutesByZoneId(@PathVariable String zoneId) {
         logger.info("Received request to fetch route IDs for zone: {}", zoneId);

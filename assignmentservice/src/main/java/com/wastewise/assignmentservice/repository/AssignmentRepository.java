@@ -12,4 +12,6 @@ public interface AssignmentRepository extends JpaRepository<Assignment, String> 
     List<Assignment> findByRouteId(String routeId);
     boolean existsByVehicleIdAndRouteId(String vehicleId, String routeId);
 
+
+
 }

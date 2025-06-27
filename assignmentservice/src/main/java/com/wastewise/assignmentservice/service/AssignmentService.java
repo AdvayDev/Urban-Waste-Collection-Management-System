@@ -10,4 +10,6 @@ public interface AssignmentService {
     List<AssignmentDTO> getAllAssignments();
     void deleteAssignment(String id);
     AssignmentDTO updateAssignment(String id, AssignmentDTO dto);
+
+    List<AssignmentDTO> getAssignmentsByRouteId(String routeId);
 }
