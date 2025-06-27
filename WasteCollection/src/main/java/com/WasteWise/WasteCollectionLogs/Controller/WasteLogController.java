@@ -1,12 +1,8 @@
 package com.WasteWise.WasteCollectionLogs.Controller;
 
 import com.WasteWise.WasteCollectionLogs.Constants.WasteLogConstants;
-import com.WasteWise.WasteCollectionLogs.Payload.RestResponse; 
-import com.WasteWise.WasteCollectionLogs.Dto.VehicleReportDTO;
-import com.WasteWise.WasteCollectionLogs.Dto.WasteLogResponseDTO;
-import com.WasteWise.WasteCollectionLogs.Dto.WasteLogStartRequestDTO;
-import com.WasteWise.WasteCollectionLogs.Dto.WasteLogUpdateRequestDTO;
-import com.WasteWise.WasteCollectionLogs.Dto.ZoneReportDTO;
+import com.WasteWise.WasteCollectionLogs.Dto.*;
+import com.WasteWise.WasteCollectionLogs.Payload.RestResponse;
 import com.WasteWise.WasteCollectionLogs.Handler.InvalidInputException;
 import com.WasteWise.WasteCollectionLogs.Handler.ResourceNotFoundException;
 import com.WasteWise.WasteCollectionLogs.ServiceImpl.WasteLogServiceImpl;
@@ -40,7 +36,7 @@ import java.util.List;
  * </p>
  */
 @RestController
-@RequestMapping("wastewise/admin/wastelogs")
+@RequestMapping("/wastewise/admin/wastelogs")
 @Validated 
 public class WasteLogController {
 	
@@ -200,4 +196,88 @@ public class WasteLogController {
     /**
      * When you add a new endpoint, just add this annotation @PreAuthorize("hasRole('ADMIN')") above the method.
      */
+    /**
+     * Accessed by Admin
+     * Retrieves the total number of completed waste collections for the current week.
+     * This endpoint does not require any input parameters as it calculates based on the current date.
+     *
+     * @return A {@link ResponseEntity} containing a {@link RestResponse} with the total
+     * number of weekly collections and an HTTP status of 200 (OK).
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports/totalCollections/weekly")
+    public ResponseEntity<RestResponse<Long>> getTotalWeeklyCollections() {
+        logger.info("Received request for total weekly collections report.");
+        long totalCollections = wasteLogService.getTotalCollectionsForCurrentWeek();
+        String message = String.format("Total weekly collections: %d", totalCollections);
+        RestResponse<Long> restResponse = new RestResponse<>(true, message, totalCollections);
+        logger.info("Total weekly collections report generated. Count: {}", totalCollections);
+        return ResponseEntity.ok(restResponse);
+    }
+
+    /**
+     * Accessed by Admin
+     * Retrieves the total number of completed waste collections for the current month.
+     * This endpoint does not require any input parameters as it calculates based on the current date.
+     *
+     * @return A {@link ResponseEntity} containing a {@link RestResponse} with the total
+     * number of monthly collections and an HTTP status of 200 (OK).
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports/totalCollections/monthly")
+    public ResponseEntity<RestResponse<Long>> getTotalMonthlyCollections() {
+        logger.info("Received request for total monthly collections report.");
+        long totalCollections = wasteLogService.getTotalCollectionsForCurrentMonth();
+        String message = String.format("Total monthly collections: %d", totalCollections);
+        RestResponse<Long> restResponse = new RestResponse<>(true, message, totalCollections);
+        logger.info("Total monthly collections report generated. Count: {}", totalCollections);
+        return ResponseEntity.ok(restResponse);
+    }
+    
+    /**
+     * Accessed by Admin
+     * Retrieves the total weight collected for completed waste collections for the current week.
+     * This endpoint does not require any input parameters as it calculates based on the current date.
+     *
+     * @return A {@link ResponseEntity} containing a {@link RestResponse} with the total
+     * weekly collected weight and an HTTP status of 200 (OK).
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports/totalWeight/weekly")
+    public ResponseEntity<RestResponse<Double>> getTotalWeightCollectedWeekly() {
+        logger.info("Received request for total weekly weight collected report.");
+        Double totalWeight = wasteLogService.getTotalWeightCollectedForCurrentWeek();
+        String message = String.format("Total weekly weight collected: %.2f kg", totalWeight);
+        RestResponse<Double> restResponse = new RestResponse<>(true, message, totalWeight);
+        logger.info("Total weekly weight collected report generated. Weight: {} kg", totalWeight);
+        return ResponseEntity.ok(restResponse);
+    }
+
+
+    /**
+     * Accessed by Admin
+     * Retrieves a paginated list of recent waste collection logs for default display on the admin dashboard.
+     * Logs are ordered by `collectionStartTime` in descending order (most recent first).
+     *
+     * @param pageable Pagination information. Defaults to size 10, page 0, sorted by `collectionStartTime` descending.
+     * @return A {@link ResponseEntity} containing a {@link RestResponse} with a Page of {@link RecentWasteLogDTO},
+     * providing recent log details with a derived status.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reports/recentLogs")
+    public ResponseEntity<RestResponse<Page<RecentWasteLogDTO>>> getRecentWasteLogs(
+            @PageableDefault(size = 10, page = 0, sort = "collectionStartTime", direction = Sort.Direction.DESC) Pageable pageable) {
+        logger.info("Received request for recent waste logs with pageable: {}", pageable);
+        Page<RecentWasteLogDTO> recentLogsPage = wasteLogService.getRecentWasteLogs(pageable);
+
+        String message = recentLogsPage.isEmpty() ?
+                WasteLogConstants.NO_RECENT_LOGS_FOUND :
+                "Recent waste logs retrieved successfully.";
+
+        RestResponse<Page<RecentWasteLogDTO>> restResponse = new RestResponse<>(true, message, recentLogsPage);
+        logger.info("Recent waste logs retrieved. Page size: {}, Total elements: {}. Response: {}",
+                recentLogsPage.getContent().size(), recentLogsPage.getTotalElements(), restResponse);
+        return ResponseEntity.ok(restResponse);
+    }
+
 }

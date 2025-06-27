@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 //import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +20,12 @@ public interface WasteLogRepository extends JpaRepository<WasteLog,Long>{
     List<WasteLog> findByVehicleIdAndCollectionStartTimeBetween(String vehicleId, LocalDateTime startDateTime, LocalDateTime endDateTime);
         
     Optional<WasteLog> findByWorkerIdAndCollectionEndTimeIsNull(String workerId);
+    
+    long countByCollectionEndTimeBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
+    
+    @Query("SELECT SUM(w.weightCollected) FROM WasteLog w WHERE w.collectionEndTime BETWEEN ?1 AND ?2")
+    Double sumWeightCollectedByCollectionEndTimeBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
+
+
 }
+

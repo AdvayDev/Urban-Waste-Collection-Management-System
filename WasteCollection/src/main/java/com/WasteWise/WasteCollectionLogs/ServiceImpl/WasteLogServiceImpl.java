@@ -1,5 +1,6 @@
 package com.WasteWise.WasteCollectionLogs.ServiceImpl;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -7,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.time.temporal.TemporalAdjusters;
 
+import com.WasteWise.WasteCollectionLogs.Dto.*;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl; 
 import org.springframework.data.domain.Pageable;
 import com.WasteWise.WasteCollectionLogs.Constants.WasteLogConstants;
-import com.WasteWise.WasteCollectionLogs.Dto.VehicleReportDTO;
-import com.WasteWise.WasteCollectionLogs.Dto.WasteLogResponseDTO;
-import com.WasteWise.WasteCollectionLogs.Dto.WasteLogStartRequestDTO;
-import com.WasteWise.WasteCollectionLogs.Dto.WasteLogUpdateRequestDTO;
-import com.WasteWise.WasteCollectionLogs.Dto.ZoneReportDTO;
 import com.WasteWise.WasteCollectionLogs.Handler.InvalidInputException;
 import com.WasteWise.WasteCollectionLogs.Handler.ResourceNotFoundException;
 import com.WasteWise.WasteCollectionLogs.Model.WasteLog;
@@ -227,5 +225,101 @@ public class WasteLogServiceImpl {
         }
 
         return new PageImpl<>(pageContent, pageable, reports.size());
+    }
+    
+    /**
+     * Retrieves the total number of completed waste collections for the current week.
+     * The week is considered to start on Sunday.
+     *
+     * @return The total number of completed collections for the current week.
+     */
+    public long getTotalCollectionsForCurrentWeek() {
+        LocalDate today = LocalDate.now();
+        // Get the start of the current week (Sunday)
+        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        // Get the end of the current week (Saturday)
+        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+
+        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endDateTime = endOfWeek.atTime(LocalTime.MAX); // End of the day for Saturday
+
+        logger.info("Calculating total collections for current week (Sunday start): {} to {}", startDateTime, endDateTime);
+        long count = wasteLogRepository.countByCollectionEndTimeBetween(startDateTime, endDateTime);
+        logger.info("Total collections for current week: {}", count);
+        return count;
+    }
+
+    /**
+     * Retrieves the total number of completed waste collections for the current month.
+     *
+     * @return The total number of completed collections for the current month.
+     */
+    public long getTotalCollectionsForCurrentMonth() {
+        LocalDate today = LocalDate.now();
+        // Get the first day of the current month
+        LocalDate startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth());
+        // Get the last day of the current month
+        LocalDate endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
+
+        LocalDateTime startDateTime = startOfMonth.atStartOfDay();
+        LocalDateTime endDateTime = endOfMonth.atTime(LocalTime.MAX); // End of the day for the last day of the month
+
+        logger.info("Calculating total collections for current month: {} to {}", startDateTime, endDateTime);
+        long count = wasteLogRepository.countByCollectionEndTimeBetween(startDateTime, endDateTime);
+        logger.info("Total collections for current month: {}", count);
+        return count;
+    }
+    
+    /**
+     * Retrieves the total weight collected for completed waste collections for the current week.
+     * The week is considered to start on Sunday.
+     *
+     * @return The total weight collected (in kilograms) for the current week. Returns 0.0 if no collections.
+     */
+    public Double getTotalWeightCollectedForCurrentWeek() {
+        LocalDate today = LocalDate.now();
+        // Get the start of the current week (Sunday)
+        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        // Get the end of the current week (Saturday)
+        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+
+        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endDateTime = endOfWeek.atTime(LocalTime.MAX); // End of the day for Saturday
+
+        logger.info("Calculating total weight collected for current week (Sunday start): {} to {}", startDateTime, endDateTime);
+        Double totalWeight = wasteLogRepository.sumWeightCollectedByCollectionEndTimeBetween(startDateTime, endDateTime);
+        
+        // If no records are found, SUM returns null. Convert null to 0.0
+        if (totalWeight == null) {
+            totalWeight = 0.0;
+        }
+        
+        logger.info("Total weight collected for current week: {} kg", totalWeight);
+        return totalWeight;
+    }
+
+    /**
+     * Retrieves a paginated list of recent waste collection logs for display.
+     * Logs are ordered by collection start time in descending order (most recent first).
+     * The returned DTOs include a derived status and handle null weight collected for in-progress logs.
+     *
+     * @param pageable Pagination and sorting information. Defaults to sorting by collectionStartTime descending.
+     * @return A Page of RecentWasteLogDTO objects.
+     */
+    public Page<RecentWasteLogDTO> getRecentWasteLogs(Pageable pageable) {
+        logger.info("Fetching recent waste logs with pageable: {}", pageable);
+
+        // Fetch logs from the repository based on the provided pageable (which includes sorting)
+        Page<WasteLog> wasteLogPage = wasteLogRepository.findAll(pageable);
+
+        // Map each WasteLog entity to a RecentWasteLogDTO
+        List<RecentWasteLogDTO> recentLogsList = wasteLogPage.getContent().stream()
+                .map(RecentWasteLogDTO::new) // Uses the constructor in RecentWasteLogDTO
+                .collect(Collectors.toList());
+
+        logger.info("Fetched {} recent waste logs. Total elements: {}", recentLogsList.size(), wasteLogPage.getTotalElements());
+
+        // Create a new PageImpl from the mapped DTOs, preserving pagination info
+        return new PageImpl<>(recentLogsList, pageable, wasteLogPage.getTotalElements());
     }
 }
