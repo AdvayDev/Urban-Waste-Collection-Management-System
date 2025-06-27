@@ -122,4 +122,18 @@ public class PickUpController {
      * @PreAuthorize("hasRole('SANITARY_WORKER')")
      * @GetMapping("/pickupinfo/{id}")
      */
+
+    /**
+     * Accessed By: Pickup Scheduler
+     * Update the existing pickup assignment
+     * @param id of pickup to be updated
+     * @param dto of CreatePickupDTO
+     * @return a response message confirming the update
+     */
+    @PreAuthorize("hasRole('SCHEDULER')")
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updatePickup(@PathVariable String id, @Valid @RequestBody CreatePickUpDto dto){
+        log.info("Updating pickup with Id {}",id);
+        return new ResponseEntity<>(pickUpService.updatePickup(id,dto), HttpStatus.OK);
+    }
 }

@@ -117,6 +117,25 @@ public class PickUpServiceImpl implements PickUpService {
         return mapToPickUpDto(pickUp);
     }
 
+    public String updatePickup(String id, CreatePickUpDto dto){
+        PickUp pickup = repository.findById(id)
+                .orElseThrow(() -> new PickUpNotFoundException ("PickUp not found with ID: " + id));
+
+        pickup.setZoneId(dto.getZoneId());
+        pickup.setVehicleId(dto.getVehicleId());
+        pickup.setLocationName(dto.getLocationName());
+        pickup.setFrequency(dto.getFrequency());
+        pickup.setTimeSlotEnd(dto.getTimeSlotEnd());
+        pickup.setTimeSlotStart(dto.getTimeSlotStart());
+        pickup.setWorker1Id(dto.getWorker1Id());
+        pickup.setWorker2Id(dto.getWorker2Id());
+
+        repository.save(pickup);
+        log.info("Pickup with id {} updated successfully",id);
+        return "Updated pickup with Id "+ id;
+
+    }
+
     private PickUpDto mapToPickUpDto(PickUp pickUp) {
         PickUpDto dto = new PickUpDto();
         dto.setId(pickUp.getId());
