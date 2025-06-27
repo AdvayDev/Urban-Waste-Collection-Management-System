@@ -40,7 +40,7 @@ import java.util.List;
  * </p>
  */
 @RestController
-@RequestMapping("wastewise/admin/wastelogs")
+@RequestMapping("/wastewise/admin/wastelogs")
 @Validated 
 public class WasteLogController {
 	
