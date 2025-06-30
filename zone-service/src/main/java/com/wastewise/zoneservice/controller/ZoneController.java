@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,11 +40,13 @@ public class ZoneController {
     private static final Logger logger = LoggerFactory.getLogger(ZoneController.class);
 
     /**
+     * Accessed by Admin
      * Create a new zone.
      *
      * @param request zone creation data
      * @return Response with created zone ID
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<RestResponse<Object>> createZone(@Valid @RequestBody ZoneCreationRequestDTO request) {
         logger.info("Received request to create zone with name: {}", request.getZoneName());
@@ -58,12 +61,14 @@ public class ZoneController {
     }
 
     /**
+     * Accessed by Admin
      * Update an existing zone.
      *
      * @param zoneId  ID of zone to update
      * @param request update data
      * @return Response with updated zone details
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{zoneId}")
     public ResponseEntity<RestResponse<Object>> updateZone(@PathVariable String zoneId,
                                                            @Valid @RequestBody ZoneUpdateRequestDTO request) {
@@ -83,11 +88,13 @@ public class ZoneController {
     }
 
     /**
+     * Accessed by Admin
      * Delete a zone by ID.
      *
      * @param zoneId ID of zone to delete
      * @return Response message
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{zoneId}")
     public ResponseEntity<RestResponse<Object>> deleteZone(@PathVariable String zoneId) {
         logger.info("Received request to delete zone with ID: {}", zoneId);
@@ -102,10 +109,12 @@ public class ZoneController {
     }
 
     /**
+     * Accessed by Admin and Scheduler
      * Get list of all zones.
      *
      * @return List of zones
      */
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/list")
     public ResponseEntity<RestResponse<Object>> getAllZones() {
         logger.info("Received request to fetch all zones");
@@ -120,11 +129,13 @@ public class ZoneController {
     }
 
     /**
+     * Accessed by Admin
      * Get a zone by ID.
      *
      * @param zoneId zone ID
      * @return Zone entity
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{zoneId}")
     public ResponseEntity<RestResponse<Object>> getZoneById(@PathVariable String zoneId) {
         logger.info("Received request to fetch zone with ID: {}", zoneId);
@@ -139,11 +150,13 @@ public class ZoneController {
     }
 
     /**
+     * Accessed by Admin and Scheduler
      * Check if zone exists by ID.
      *
      * @param zoneId zone ID
      * @return true if exists, false otherwise
      */
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/{zoneId}/exists")
     public ResponseEntity<RestResponse<Object>> zoneExists(@PathVariable String zoneId) {
         logger.info("Checking existence of zone with ID: {}", zoneId);
@@ -156,10 +169,12 @@ public class ZoneController {
         );
     }
     /**
+     * Accessed by Admin and Scheduler
      * Get all zone IDs and names only.
      *
      * @return List of ZoneNameAndIdResponse
      */
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER)")
     @GetMapping("/namesandids")
     public ResponseEntity<RestResponse<Object>> getAllZoneNamesAndIds() {
         logger.info("Received request for all zone names and IDs");
