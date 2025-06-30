@@ -4,8 +4,10 @@ import com.wastewise.vehicleservice.dto.VehicleDTO;
 import com.wastewise.vehicleservice.enums.VehicleType;
 import com.wastewise.vehicleservice.enums.VehicleStatus;
 import com.wastewise.vehicleservice.service.VehicleService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +31,7 @@ public class VehicleController {
      * @return the created vehicle with HTTP 201 status
      */
     @PostMapping
-    public ResponseEntity<VehicleDTO> createVehicle(@RequestBody VehicleDTO dto) {
+    public ResponseEntity<VehicleDTO> createVehicle(@Valid @RequestBody VehicleDTO dto) {
         log.info("POST /wastewise/admin/vehicle-assignments - Creating vehicle");
         VehicleDTO created = vehicleService.createVehicle(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -57,6 +59,9 @@ public class VehicleController {
         log.info("GET /wastewise/admin/vehicle-assignments");
         return ResponseEntity.ok(vehicleService.getAllVehicles());
     }
+
+
+
 
     /**
      * Updates an existing vehicle.

@@ -1,6 +1,7 @@
 package com.wastewise.vehicleservice.service;
 
 import com.wastewise.vehicleservice.dto.VehicleDTO;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -9,9 +10,14 @@ import java.util.List;
  */
 public interface VehicleService {
     VehicleDTO createVehicle(VehicleDTO dto);
+
     VehicleDTO getVehicleById(String id);
+
     List<VehicleDTO> getAllVehicles();
+
     void updateVehicle(String id, VehicleDTO dto);
+
     void deleteVehicle(String id);
+
     List<VehicleDTO> getVehiclesByTypeAndStatus(String type, String status);
 }

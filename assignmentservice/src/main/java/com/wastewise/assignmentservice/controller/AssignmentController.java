@@ -5,9 +5,11 @@ import com.wastewise.assignmentservice.service.AssignmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
+
 
 @RestController
 @RequestMapping("wastewise/admin/assignments")
@@ -26,7 +28,7 @@ public class AssignmentController {
      */
 
     @PostMapping
-    public ResponseEntity<AssignmentDTO> create(@RequestBody AssignmentDTO dto) {
+    public ResponseEntity<AssignmentDTO> create( @Valid @RequestBody AssignmentDTO dto) {
         log.info("Creating new assignment");
         return ResponseEntity.status(HttpStatus.CREATED).body(assignmentService.createAssignment(dto));
     }
