@@ -1,7 +1,10 @@
 package com.wastewise.workermanagement.repository;
 
+import com.netflix.discovery.util.EurekaEntityComparators;
 import com.wastewise.workermanagement.dto.WorkerInfoDTO;
+import com.wastewise.workermanagement.enums.WorkerStatus;
 import com.wastewise.workermanagement.model.Worker;
+import feign.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -27,4 +30,7 @@ public interface WorkerRepository extends JpaRepository<Worker,String> {
     boolean existsByContactNumberAndWorkerIdNot(String number, String id);
 
     boolean existsByContactEmailAndWorkerIdNot(String email, String id);
+
+    @Query("SELECT w.workerStatus FROM Worker w WHERE w.workerId = :id")
+    WorkerStatus findStatusById(@Param("id") String id);
 }

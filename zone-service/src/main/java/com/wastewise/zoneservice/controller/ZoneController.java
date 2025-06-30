@@ -158,15 +158,16 @@ public class ZoneController {
      */
     @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/{zoneId}/exists")
-    public ResponseEntity<RestResponse<Object>> zoneExists(@PathVariable String zoneId) {
+    public boolean zoneExists(@PathVariable String zoneId) {
         logger.info("Checking existence of zone with ID: {}", zoneId);
         boolean exists = zoneService.existsByZoneId(zoneId);
-        return ResponseEntity.ok(
-                RestResponse.builder()
-                        .message(ZoneConstants.ZONE_EXISTENCE_CHECK_MSG)
-                        .data(exists)
-                        .build()
-        );
+        return exists;
+//        return ResponseEntity.ok(
+//                RestResponse.builder()
+//                        .message(ZoneConstants.ZONE_EXISTENCE_CHECK_MSG)
+//                        .data(exists)
+//                        .build()
+//        );
     }
     /**
      * Accessed by Admin and Scheduler

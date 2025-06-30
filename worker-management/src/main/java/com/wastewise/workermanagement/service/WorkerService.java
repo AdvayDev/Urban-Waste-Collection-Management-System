@@ -23,4 +23,5 @@ public interface WorkerService {
 
     String changeWorkerStatus(String id, WorkerStatus workerStatus);
 
+    Boolean checkWorkerExists(String workerId);
 }

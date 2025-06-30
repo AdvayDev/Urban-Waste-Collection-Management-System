@@ -84,6 +84,14 @@ public class VehicleServiceImpl implements VehicleService {
                 .collect(Collectors.toList());
     }
 
+    public boolean checkVehicleExists(String id){
+        return vehicleRepository.existsById(id);
+    }
 
-
+    public void updateVehicleStatus(String id, VehicleStatus status){
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle with id "+ id + " does not exist"));
+        vehicle.setStatus(status);
+        vehicleRepository.save(vehicle);
+    }
 }

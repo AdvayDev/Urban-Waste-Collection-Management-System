@@ -68,8 +68,6 @@ public class VehicleController {
     }
 
 
-
-
     /**
      * Accessed by Admin
      * Updates an existing vehicle.
@@ -127,5 +125,19 @@ public class VehicleController {
         log.info("GET /wastewise/admin/vehicle-assignments/filter/routetruck");
         return ResponseEntity.ok(vehicleService.getVehiclesByTypeAndStatus(
                 VehicleType.ROUTE_TRUCK.name(), VehicleStatus.AVAILABLE.name()));
+    }
+
+    @PreAuthorize("hasRole('SCHEDULER')")
+    @GetMapping("/exists/{id}")
+    public boolean checkVehicleExists(@PathVariable String id){
+        log.info("Checking if vehicle with id {} exists or not",id);
+        return vehicleService.checkVehicleExists(id);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
+    @PutMapping("/status/{id}")
+    public void updateVehicleStatus(@PathVariable String id, @RequestBody VehicleStatus status){
+        log.info("Updating the status of vehicle with id {}", id);
+        vehicleService.updateVehicleStatus(id, status);
     }
 }

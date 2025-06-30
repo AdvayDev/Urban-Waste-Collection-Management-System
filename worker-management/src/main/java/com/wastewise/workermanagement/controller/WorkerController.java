@@ -7,9 +7,11 @@ import com.wastewise.workermanagement.dto.WorkerUpdateDTO;
 import com.wastewise.workermanagement.enums.WorkerStatus;
 import com.wastewise.workermanagement.service.WorkerService;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.http.ResponseEntity;
@@ -117,5 +119,12 @@ public class WorkerController {
     public ResponseEntity<String> updateWorkerStatus(@PathVariable String workerId, @RequestBody WorkerStatus workerStatus){
         log.info("Updating the status of worker with id {} to status {}", workerId, workerStatus);
         return ResponseEntity.ok(workerService.changeWorkerStatus(workerId, workerStatus));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
+    @GetMapping("/exists/{workerId}")
+    public Boolean checkWorkerExists(@PathVariable String workerId){
+        log.info("Checking if worker with Id {}, exists or not",workerId);
+        return workerService.checkWorkerExists(workerId);
     }
 }
