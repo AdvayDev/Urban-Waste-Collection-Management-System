@@ -1,11 +1,14 @@
 package com.WasteWise.WasteCollectionLogs.Dto;
 import com.WasteWise.WasteCollectionLogs.Model.WasteLog;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class RecentWasteLogDTO {
 
     private String zoneId;

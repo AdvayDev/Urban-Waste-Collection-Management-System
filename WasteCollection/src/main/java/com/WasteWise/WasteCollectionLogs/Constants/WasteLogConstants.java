@@ -35,4 +35,8 @@ public final class WasteLogConstants {
 	    public static final String ACTIVE_LOG_EXISTS_MESSAGE = "A collection log for worker ID '%s', zone ID '%s', and vehicle ID '%s' is already active (not yet completed).";
 
 	public static final String NO_RECENT_LOGS_FOUND = "No recent waste collection logs found.";
+	 public static final String RECENT_LOGS_RETRIEVED_SUCCESSFULLY = "Recent waste logs retrieved successfully.";
+	
+	public static final String SANITARY_WORKER_ROLE = "SANITARY_WORKER"; 
+	public static final String ADMIN_ROLE = "ADMIN";
 }
