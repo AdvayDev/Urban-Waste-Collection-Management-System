@@ -10,8 +10,11 @@ import com.wastewise.vehicleservice.service.VehicleService;
 import com.wastewise.vehicleservice.utility.IdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +47,7 @@ public class VehicleServiceImpl implements VehicleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with ID: " + id));
         return modelMapper.map(vehicle, VehicleDTO.class);
     }
+
 
     @Override
     public List<VehicleDTO> getAllVehicles() {
@@ -80,6 +84,14 @@ public class VehicleServiceImpl implements VehicleService {
                 .collect(Collectors.toList());
     }
 
+    public boolean checkVehicleExists(String id){
+        return vehicleRepository.existsById(id);
+    }
 
-
+    public void updateVehicleStatus(String id, VehicleStatus status){
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle with id "+ id + " does not exist"));
+        vehicle.setStatus(status);
+        vehicleRepository.save(vehicle);
+    }
 }

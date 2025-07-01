@@ -196,4 +196,14 @@ public class WorkerServiceImpl implements WorkerService {
 
         return "Status of worker with id "+ id + " changed successfully";
     }
+
+    /**
+     * Method to check if worker with id exists and is available or not
+     * @param id of worker
+     * @return boolean of worker's existance
+     */
+    public Boolean checkWorkerExists(String id){
+        return workerRepository.existsById(id) && workerRepository.findStatusById(id).equals((WorkerStatus.AVAILABLE));
+
+    }
 }

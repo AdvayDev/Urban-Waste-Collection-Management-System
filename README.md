@@ -4,6 +4,8 @@ Urban waste collection management system. Group project of POD 2 of cohort INTAD
 # Port Information
 Assignment Service: 8080
 
+API-Gateway: 8090
+
 Auth Service: 8096
 
 Eureka Server: 8761
