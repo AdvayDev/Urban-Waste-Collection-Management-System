@@ -1,9 +1,6 @@
 package com.wastewise.workermanagement.controller;
 
-import com.wastewise.workermanagement.dto.WorkerCreateDTO;
-import com.wastewise.workermanagement.dto.WorkerDTO;
-import com.wastewise.workermanagement.dto.WorkerInfoDTO;
-import com.wastewise.workermanagement.dto.WorkerUpdateDTO;
+import com.wastewise.workermanagement.dto.*;
 import com.wastewise.workermanagement.enums.WorkerStatus;
 import com.wastewise.workermanagement.service.WorkerService;
 import jakarta.validation.Valid;
@@ -121,9 +118,17 @@ public class WorkerController {
         return ResponseEntity.ok(workerService.changeWorkerStatus(workerId, workerStatus));
     }
 
+
+    @PatchMapping("/internal/status")
+    public void changeWorkerStatus(@RequestBody WorkerStatusDTO dto){
+        log.info("Updating the status of worker with id {} to status {}", dto.getWorkerId(), dto.getStatus());
+        workerService.changeWorkerStatus(dto.getWorkerId(), dto.getStatus());
+        ResponseEntity.ok();
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
-    @GetMapping("/exists/{workerId}")
-    public Boolean checkWorkerExists(@PathVariable String workerId){
+    @GetMapping("/internal/exists")
+    public Boolean checkWorkerExists(@RequestBody String workerId){
         log.info("Checking if worker with Id {}, exists or not",workerId);
         return workerService.checkWorkerExists(workerId);
     }

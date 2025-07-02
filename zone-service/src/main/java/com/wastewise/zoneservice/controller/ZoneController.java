@@ -169,6 +169,13 @@ public class ZoneController {
 //                        .build()
 //        );
     }
+
+    @GetMapping("/internal/exists")
+    public boolean checkZoneExists(@RequestBody String zoneId) {
+        logger.info("Checking existence of zone with ID: {}", zoneId);
+        boolean exists = zoneService.existsByZoneId(zoneId);
+        return exists;
+    }
     /**
      * Accessed by Admin and Scheduler
      * Get all zone IDs and names only.
