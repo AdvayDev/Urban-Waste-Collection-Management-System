@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @Slf4j
@@ -27,8 +28,9 @@ public class WorkerController {
     }
 
     /**
-     *  Accessed by: Admin
+     * Accessed by: Admin
      * Creating a new worker
+     *
      * @param dto takes dto of worker as input. (name, contactNumber, contactEmail, roleId, Status)
      * @return string message for confirmation of successful or failed execution
      */
@@ -40,34 +42,37 @@ public class WorkerController {
     }
 
     /**
-     *  Accessed by: Admin
+     * Accessed by: Admin
      * finding all the workers
+     *
      * @return a list of workerDTO (workerId, name, contactNumber, contactEmail, roleId, Status
      */
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<WorkerDTO>> findAllWorkers(){
+    public ResponseEntity<List<WorkerDTO>> findAllWorkers() {
         log.info("Fetching all the workers");
         return ResponseEntity.ok(workerService.getAllWorkers());
     }
 
     /**
-     *  Accessed by: Admin, sanitary worker
+     * Accessed by: Admin, sanitary worker
      * getting worker by workerId
+     *
      * @param id workerId is passed as a prameter
      * @return workerDTO object
      */
     @PreAuthorize("hasAnyRole('ADMIN','SANITARY_WORKER')")
     @GetMapping("/{id}")
     public ResponseEntity<WorkerDTO> getWorker(@PathVariable String id) {
-        log.info("Finding worker with id {}",id);
+        log.info("Finding worker with id {}", id);
         WorkerDTO worker = workerService.getWorker(id);
         return ResponseEntity.ok(worker);
     }
 
     /**
-     *  Accessed by: Admin
+     * Accessed by: Admin
      * getting all the workerIds irrespective of role and status
+     *
      * @return List of all the workerIds
      */
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,8 +83,9 @@ public class WorkerController {
     }
 
     /**
-     *  Accessed by: Admin, Scheduler
+     * Accessed by: Admin, Scheduler
      * finding all the sanitary workers with status Available
+     *
      * @return list of workerInfoDTOs with status is available
      */
     @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
@@ -90,16 +96,17 @@ public class WorkerController {
     }
 
     /**
-     *  Accessed by: Admin
+     * Accessed by: Admin
      * Updating worker information
-     * @param id WorkerId is passed as a parameter to pass the object
+     *
+     * @param id  WorkerId is passed as a parameter to pass the object
      * @param dto WorkerUpdateDTO is passed (name, contactNumber, contactEmail, roleId, status)
      * @return String message sharing the execution status of the
      */
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<String> updateWorker(@PathVariable String id,
-                                                        @Valid @RequestBody WorkerUpdateDTO dto) {
+                                               @Valid @RequestBody WorkerUpdateDTO dto) {
         log.info("updating worker with id {}", id);
         return ResponseEntity.ok(workerService.updateWorker(id, dto));
     }
@@ -107,29 +114,32 @@ public class WorkerController {
     /**
      * Accessed by: Admin, Scheduler
      * updating worker status
-     * @param workerId workerId is passed to find the worker
+     *
+     * @param workerId     workerId is passed to find the worker
      * @param workerStatus worker status is passed as request body
      * @return string message confirming the updating of status
      */
     @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @PatchMapping("/status/{workerId}")
-    public ResponseEntity<String> updateWorkerStatus(@PathVariable String workerId, @RequestBody WorkerStatus workerStatus){
+    public ResponseEntity<String> updateWorkerStatus(@PathVariable String workerId, @RequestBody WorkerStatus workerStatus) {
         log.info("Updating the status of worker with id {} to status {}", workerId, workerStatus);
         return ResponseEntity.ok(workerService.changeWorkerStatus(workerId, workerStatus));
     }
 
 
-    @PatchMapping("/internal/status")
-    public void changeWorkerStatus(@RequestBody WorkerStatusDTO dto){
-        log.info("Updating the status of worker with id {} to status {}", dto.getWorkerId(), dto.getStatus());
-        workerService.changeWorkerStatus(dto.getWorkerId(), dto.getStatus());
-        ResponseEntity.ok();
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
+    @GetMapping("/internal/exists")
+    public Boolean checkWorkerExists(@RequestParam String workerId) {
+        log.info("Checking if worker with Id {}, exists or not", workerId);
+        return workerService.checkWorkerExists(workerId);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
-    @GetMapping("/internal/exists")
-    public Boolean checkWorkerExists(@RequestBody String workerId){
-        log.info("Checking if worker with Id {}, exists or not",workerId);
-        return workerService.checkWorkerExists(workerId);
+    @PutMapping("/internal/status")
+    public ResponseEntity<Void> changeWorkerStatus(@RequestBody WorkerStatusDTO dto) {
+        log.info("Updating the status of worker with id {} to status {}", dto.getWorkerId(), dto.getStatus());
+        workerService.changeWorkerStatus(dto.getWorkerId(), dto.getStatus());
+        return ResponseEntity.ok().build();
     }
+
 }

@@ -172,6 +172,12 @@ public class ZoneController {
                        .build()
        );
    }
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
+    @GetMapping("/internal/exists")
+    public boolean checkZoneExists(@RequestParam String zoneId) {
+        boolean exists = zoneService.existsByZoneId(zoneId);
+        return exists;
+    }
 
 //        return ResponseEntity.ok(
 //                RestResponse.builder()

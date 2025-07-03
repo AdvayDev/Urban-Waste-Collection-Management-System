@@ -176,7 +176,7 @@ public class PickUpServiceImpl implements PickUpService {
             log.info("Notifying vehicle {} with status: {}", vehicleId, status);
 
             VehicleStatusUpdateDto dto = new VehicleStatusUpdateDto(vehicleId,status);
-            vehicleServiceClient.updateVehicleStatus(dto);
+            vehicleServiceClient.updateVehicleStatus(vehicleId, status);
 
             log.info("Vehicle {} successfully notified with status: {}", vehicleId, status);
 

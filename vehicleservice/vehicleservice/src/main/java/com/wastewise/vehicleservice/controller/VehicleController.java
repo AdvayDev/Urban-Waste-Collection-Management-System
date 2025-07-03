@@ -129,23 +129,26 @@ public class VehicleController {
                 VehicleType.ROUTE_TRUCK.name(), VehicleStatus.AVAILABLE.name()));
     }
 
-    @PreAuthorize("hasRole('SCHEDULER')")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/internal/exists")
-    public boolean checkVehicleExists(@RequestBody String id){
-        log.info("Checking if vehicle with id {} exists or not",id);
+    public boolean checkVehicleExists(@RequestParam String id) {
+        log.info("Checking if vehicle with id {} exists or not", id);
         return vehicleService.checkVehicleExists(id);
     }
 
-//    @PutMapping("/internal/status")
+
+    //    @PutMapping("/internal/status")
 //    public void updateVehicleStatus( @RequestBody VehicleStatusDTO dto){
 //        log.info("Updating the status of vehicle with id {}", dto.getVehicleId());
 //        vehicleService.updateVehicleStatus(dto);
 //    }
+
     @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @PutMapping("/status/{id}")
-    public void updateVehicleStatus(@PathVariable String id, @RequestBody VehicleStatus status){
+    public void updateVehicleStatus(@PathVariable String id, @RequestBody VehicleStatus status) {
         log.info("Updating the status of vehicle with id {}", id);
         vehicleService.updateVehicleStatus(id, status);
-        log.info("Updated status of vehicle id {} sucessfully",id);
-}
+        log.info("Updated status of vehicle id {} successfully", id);
+    }
+
 }

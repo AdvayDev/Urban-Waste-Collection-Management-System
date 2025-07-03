@@ -1,19 +1,17 @@
 package com.wastewise.pickup.client;
 
+import com.wastewise.pickup.configuration.FeignClientPickup;
 import com.wastewise.pickup.dto.VehicleStatusUpdateDto;
+import com.wastewise.pickup.model.enums.VehicleStatus;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "vehicle-service", url="/wastewise/admin/vehicle-management")
+@FeignClient(name = "VEHICLESERVICE", configuration = FeignClientPickup.class)
 public interface VehicleServiceClient {
-    @GetMapping("/internal/exists")
-    boolean checkVehicleExists(@RequestBody String id);
 
-//    @GetMapping("/vehicles/{id}")
-//    VehicleDto getVehicleById(@PathVariable("id") String id);
+    @GetMapping("/wastewise/admin/vehicle-management/internal/exists")
+    boolean checkVehicleExists(@RequestParam("id") String id);
 
-    @PutMapping("/internal/status")
-    void updateVehicleStatus(@RequestBody VehicleStatusUpdateDto dto);
+    @PutMapping("/wastewise/admin/vehicle-management/status/{id}")
+    void updateVehicleStatus(@PathVariable("id") String id, @RequestBody VehicleStatus status);
 }
