@@ -157,7 +157,7 @@ public class PickUpServiceImpl implements PickUpService {
             log.info("Notifying worker {} with status: {}", workerId, status);
 
             WorkerStatusUpdateDto dto = new WorkerStatusUpdateDto(workerId, status);
-            workerServiceClient.changeWorkerStatus(dto);
+            workerServiceClient.updateWorkerStatus(dto);
 
             log.info("Worker {} successfully notified with status: {}", workerId, status);
 
