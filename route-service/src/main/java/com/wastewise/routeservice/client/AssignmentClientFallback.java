@@ -1,18 +1,19 @@
 package com.wastewise.routeservice.client;
 
-import com.wastewise.routeservice.payload.RestResponse;
+import com.wastewise.routeservice.dto.AssignmentDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Fallback implementation for AssignmentClient in case the service is unavailable.
+ */
 @Component
 public class AssignmentClientFallback implements AssignmentClient {
+
     @Override
-    public RestResponse<List<String>> getAssignmentIdsByRouteId(String routeId) {
-        return RestResponse.<List<String>>builder()
-                .message("Assignment service unavailable - fallback used")
-                .data(Collections.emptyList())
-                .build();
+    public List<AssignmentDTO> getAssignmentsByRouteId(String routeId) {
+        return Collections.emptyList();
     }
 }

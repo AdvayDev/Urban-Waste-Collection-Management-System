@@ -12,6 +12,7 @@ import com.wastewise.routeservice.client.AssignmentClient;
 import com.wastewise.routeservice.client.ZoneClient;
 import com.wastewise.routeservice.dto.RouteCreationRequestDTO;
 import com.wastewise.routeservice.dto.RouteResponseDTO;
+import com.wastewise.routeservice.dto.AssignmentDTO;
 import com.wastewise.routeservice.dto.RouteUpdateRequestDTO;
 import com.wastewise.routeservice.entity.Route;
 import com.wastewise.routeservice.exception.custom.DuplicateRouteNameException;
@@ -118,9 +119,12 @@ public class RouteServiceImpl implements RouteService {
         Route route = routeRepository.findById(routeId)
                 .orElseThrow(() -> new RouteNotFoundException(routeId));
 
-        List<String> assignmentIds = assignmentClient.getAssignmentIdsByRouteId(routeId).getData();
+        List<AssignmentDTO> assignments = assignmentClient.getAssignmentsByRouteId(routeId);
+        List<String> assignmentIds = assignments.stream()
+                .map(AssignmentDTO::getId)
+                .collect(Collectors.toList());
 
-        if (assignmentIds != null && !assignmentIds.isEmpty()) {
+        if (!assignmentIds.isEmpty()) {
             log.error("Cannot delete route {}: assignments found: {}", routeId, assignmentIds);
             throw new RouteDeletionException(routeId, assignmentIds);
         }
@@ -128,6 +132,8 @@ public class RouteServiceImpl implements RouteService {
         routeRepository.delete(route);
         log.info("Route deleted successfully: {}", routeId);
     }
+
+
 
     @Override
     public List<RouteResponseDTO> getAllRoutes() {

@@ -103,7 +103,7 @@ public class AssignmentController {
      * @return list of assignments shared by
      */
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/by-route/{routeId}")
+    @GetMapping("/route/{routeId}")
     public ResponseEntity<List<AssignmentDTO>> getAssignmentsByRouteId(@PathVariable String routeId) {
         log.info("Fetching assignments for route ID: {}", routeId);
         return ResponseEntity.ok(assignmentService.getAssignmentsByRouteId(routeId));
