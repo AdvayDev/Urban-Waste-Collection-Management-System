@@ -91,6 +91,7 @@ public class VehicleServiceImpl implements VehicleService {
     public void updateVehicleStatus(String id, VehicleStatus status){
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle with id "+ id + " does not exist"));
+        System.out.println("reacehed the updatevehiclestatus ");
         vehicle.setStatus(status);
         vehicleRepository.save(vehicle);
     }

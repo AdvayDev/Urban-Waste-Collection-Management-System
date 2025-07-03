@@ -25,4 +25,5 @@ public interface VehicleService {
     boolean checkVehicleExists(String id);
 
     void updateVehicleStatus(String id, VehicleStatus status);
+
 }

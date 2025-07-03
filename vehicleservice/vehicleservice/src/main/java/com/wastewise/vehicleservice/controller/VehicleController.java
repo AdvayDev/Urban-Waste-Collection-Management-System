@@ -80,6 +80,7 @@ public class VehicleController {
     @PutMapping("/{id}")
     public ResponseEntity<String> updateVehicle(@PathVariable String id, @RequestBody VehicleDTO dto) {
         log.info("PUT /wastewise/admin/vehicle-assignments/{}", id);
+
         vehicleService.updateVehicle(id, dto);
         return ResponseEntity.ok("Vehicle updated successfully.");
     }

@@ -45,7 +45,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = userOpt.get();
-
+        System.out.println(dto.getPassword());
+        System.out.println(user.getPassword());
+        System.out.println(passwordEncoder.matches(dto.getPassword(),user.getPassword()));
         if(!passwordEncoder.matches(dto.getPassword(),user.getPassword())){
             throw new InvalidCredentialsException("Invalid password entered");
         }
@@ -65,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = new User();
         user.setWorkerId(dto.getWorkerId());
+        System.out.println("reg worker"+passwordEncoder.encode(dto.getWorkerId()));
         user.setPassword(passwordEncoder.encode(dto.getWorkerId()));
         user.setRole(role);
         user.setCreatedDate(LocalDateTime.now());
