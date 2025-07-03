@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wastewise.zoneservice.constant.ZoneConstants;
@@ -116,10 +119,11 @@ public class ZoneController {
      */
     @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/list")
-    public ResponseEntity<RestResponse<Object>> getAllZones() {
-        logger.info("Received request to fetch all zones");
-        List<Zone> zones = zoneService.getAllZones();
-        logger.info("Returning {} zones", zones.size());
+    public ResponseEntity<RestResponse<Object>> getAllZones(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        logger.info("Received request to fetch paginated zones");
+        Page<Zone> zones = zoneService.getAllZones(PageRequest.of(page, size));
         return ResponseEntity.ok(
                 RestResponse.builder()
                         .message(ZoneConstants.ZONES_LISTED_MSG)
@@ -127,6 +131,7 @@ public class ZoneController {
                         .build()
         );
     }
+
 
     /**
      * Accessed by Admin
@@ -156,26 +161,32 @@ public class ZoneController {
      * @param zoneId zone ID
      * @return true if exists, false otherwise
      */
-    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
-    @GetMapping("/{zoneId}/exists")
-    public boolean zoneExists(@PathVariable String zoneId) {
-        logger.info("Checking existence of zone with ID: {}", zoneId);
-        boolean exists = zoneService.existsByZoneId(zoneId);
-        return exists;
+   @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
+   @GetMapping("/{zoneId}/exists")
+   public ResponseEntity<RestResponse<Boolean>> zoneExists(@PathVariable String zoneId) {
+       boolean exists = zoneService.existsByZoneId(zoneId);
+       return ResponseEntity.ok(
+               RestResponse.<Boolean>builder()
+                       .message("Zone existence check completed")
+                       .data(exists)
+                       .build()
+       );
+   }
+
 //        return ResponseEntity.ok(
 //                RestResponse.builder()
 //                        .message(ZoneConstants.ZONE_EXISTENCE_CHECK_MSG)
 //                        .data(exists)
 //                        .build()
 //        );
-    }
+
     /**
      * Accessed by Admin and Scheduler
      * Get all zone IDs and names only.
      *
      * @return List of ZoneNameAndIdResponse
      */
-    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER)")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/namesandids")
     public ResponseEntity<RestResponse<Object>> getAllZoneNamesAndIds() {
         logger.info("Received request for all zone names and IDs");

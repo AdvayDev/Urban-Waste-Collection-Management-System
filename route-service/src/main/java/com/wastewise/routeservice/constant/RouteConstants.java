@@ -25,4 +25,5 @@ public class RouteConstants {
     public static final String NO_CHANGES_MSG = "No changes detected for route with ID %s";
     public static final String INVALID_ROUTE_DETAILS_MSG = "Invalid route details: %s";
     public static final String ZONE_NOT_FOUND_MSG = "Zone with ID '%s' does not exist.";
+    public static final String ROUTE_DELETION_FAILED_DUE_TO_ASSIGNMENTS = "Cannot delete route %s because it has assigned tasks: %s";
 }

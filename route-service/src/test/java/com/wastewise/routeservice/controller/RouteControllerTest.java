@@ -2,6 +2,7 @@ package com.wastewise.routeservice.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -17,6 +18,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -144,13 +147,23 @@ public class RouteControllerTest {
 
     @Test
     void getAllRoutes_success() throws Exception {
-        Mockito.when(routeService.getAllRoutes()).thenReturn(List.of(mockRoute));
+        RouteResponseDTO route = RouteResponseDTO.builder()
+                .routeId("Z001-R001")
+                .routeName("Main Route")
+                .zoneId("Z001")
+                .pickupPoints("P1,P2")
+                .estimatedTime(30)
+                .build();
 
-        mockMvc.perform(get("/wastewise/admin/routes/list"))
+        when(routeService.getAllRoutes(any())).thenReturn(
+            new PageImpl<>(List.of(route), PageRequest.of(0, 10), 1)
+        );
+
+        mockMvc.perform(get("/wastewise/admin/routes/list?page=0&size=10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].routeId").value("Z001-R001"))
-                .andExpect(jsonPath("$.message").value("Routes retrieved successfully"));
+                .andExpect(jsonPath("$.data.content[0].routeId").value("Z001-R001"));
     }
+
 
     @Test
     void deleteRoute_success() throws Exception {

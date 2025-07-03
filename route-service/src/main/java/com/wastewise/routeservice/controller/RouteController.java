@@ -15,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -110,10 +113,11 @@ public class RouteController {
      */
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
-    public ResponseEntity<RestResponse<Object>> getAllRoutes() {
-        logger.info("Received request to fetch all routes");
-        List<RouteResponseDTO> routes = routeService.getAllRoutes();
-        logger.info("Returning {} routes", routes.size());
+    public ResponseEntity<RestResponse<Object>> getAllRoutes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        logger.info("Received request to fetch paginated routes");
+        Page<RouteResponseDTO> routes = routeService.getAllRoutes(PageRequest.of(page, size));
         return ResponseEntity.ok(
                 RestResponse.builder()
                         .message(RouteConstants.ROUTES_LISTED_MSG)

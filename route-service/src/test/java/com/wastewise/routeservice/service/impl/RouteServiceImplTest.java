@@ -1,22 +1,35 @@
 package com.wastewise.routeservice.service.impl;
 
-import com.wastewise.routeservice.dto.RouteCreationRequestDTO;
-import com.wastewise.routeservice.dto.RouteUpdateRequestDTO;
-import com.wastewise.routeservice.entity.Route;
-import com.wastewise.routeservice.exception.custom.*;
-import com.wastewise.routeservice.feign.ZoneClient;
-import com.wastewise.routeservice.payload.RestResponse;
-import com.wastewise.routeservice.repository.RouteRepository;
-import com.wastewise.routeservice.util.RouteIdGenerator;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import com.wastewise.routeservice.client.AssignmentClient;
+import com.wastewise.routeservice.client.ZoneClient;
+import com.wastewise.routeservice.dto.RouteCreationRequestDTO;
+import com.wastewise.routeservice.dto.RouteUpdateRequestDTO;
+import com.wastewise.routeservice.entity.Route;
+import com.wastewise.routeservice.exception.custom.DuplicateRouteNameException;
+import com.wastewise.routeservice.exception.custom.NoRouteChangesDetectedException;
+import com.wastewise.routeservice.exception.custom.RouteDeletionException;
+import com.wastewise.routeservice.exception.custom.RouteNotFoundException;
+import com.wastewise.routeservice.exception.custom.ZoneNotFoundException;
+import com.wastewise.routeservice.payload.RestResponse;
+import com.wastewise.routeservice.repository.RouteRepository;
+import com.wastewise.routeservice.util.RouteIdGenerator;
 
 /**
  * ------------------------------------------------------------------------------
@@ -33,6 +46,7 @@ class RouteServiceImplTest {
     @Mock private RouteRepository routeRepository;
     @Mock private RouteIdGenerator routeIdGenerator;
     @Mock private ZoneClient zoneClient;
+    @Mock private AssignmentClient assignmentClient;
 
     @InjectMocks private RouteServiceImpl routeService;
 
@@ -179,7 +193,16 @@ class RouteServiceImplTest {
     @Test
     void deleteRoute_success() {
         Route route = new Route("Z001-R001", "RouteA", "Z001", "P1", 25, null, null);
+
         when(routeRepository.findById("Z001-R001")).thenReturn(Optional.of(route));
+
+        // ✅ Mock the assignmentClient to return an empty list inside a RestResponse
+        RestResponse<List<String>> mockResponse = RestResponse.<List<String>>builder()
+                .message("No assignments")
+                .data(List.of())
+                .build();
+
+        when(assignmentClient.getAssignmentIdsByRouteId("Z001-R001")).thenReturn(mockResponse);
 
         routeService.deleteRoute("Z001-R001");
 
@@ -249,5 +272,34 @@ class RouteServiceImplTest {
         List<String> routeIds = routeService.getRouteIdsByZoneId("Z001");
 
         assertThat(routeIds).containsExactly("Z001-R001", "Z001-R002");
+    }
+    
+    @Test
+    void deleteRoute_success_whenNoAssignments() {
+        Route route = new Route("Z001-R001", "RouteA", "Z001", "P1,P2", 25, null, null);
+        when(routeRepository.findById("Z001-R001")).thenReturn(Optional.of(route));
+        when(assignmentClient.getAssignmentIdsByRouteId("Z001-R001"))
+                .thenReturn(RestResponse.<List<String>>builder().data(Collections.emptyList()).build());
+
+        routeService.deleteRoute("Z001-R001");
+
+        verify(routeRepository).delete(route);
+    }
+    
+    @Test
+    void deleteRoute_failure_dueToAssignments() {
+        Route route = new Route("Z001-R001", "RouteA", "Z001", "P1,P2", 25, null, null);
+        List<String> assignments = List.of("A001", "A002");
+
+        when(routeRepository.findById("Z001-R001")).thenReturn(Optional.of(route));
+        when(assignmentClient.getAssignmentIdsByRouteId("Z001-R001"))
+                .thenReturn(RestResponse.<List<String>>builder().data(assignments).build());
+
+        assertThatThrownBy(() -> routeService.deleteRoute("Z001-R001"))
+                .isInstanceOf(RouteDeletionException.class)
+                .hasMessageContaining("Z001-R001")
+                .hasMessageContaining("A001");
+
+        verify(routeRepository, never()).delete(any());
     }
 }

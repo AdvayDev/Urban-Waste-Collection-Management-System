@@ -1,20 +1,31 @@
 package com.wastewise.routeservice.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+
+import com.wastewise.routeservice.client.AssignmentClient;
+import com.wastewise.routeservice.client.ZoneClient;
 import com.wastewise.routeservice.dto.RouteCreationRequestDTO;
 import com.wastewise.routeservice.dto.RouteResponseDTO;
 import com.wastewise.routeservice.dto.RouteUpdateRequestDTO;
 import com.wastewise.routeservice.entity.Route;
-import com.wastewise.routeservice.exception.custom.*;
-import com.wastewise.routeservice.feign.ZoneClient;
+import com.wastewise.routeservice.exception.custom.DuplicateRouteNameException;
+import com.wastewise.routeservice.exception.custom.NoRouteChangesDetectedException;
+import com.wastewise.routeservice.exception.custom.RouteDeletionException;
+import com.wastewise.routeservice.exception.custom.RouteNotFoundException;
+import com.wastewise.routeservice.exception.custom.ZoneNotFoundException;
 import com.wastewise.routeservice.payload.RestResponse;
 import com.wastewise.routeservice.repository.RouteRepository;
 import com.wastewise.routeservice.service.RouteService;
 import com.wastewise.routeservice.util.RouteIdGenerator;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * ------------------------------------------------------------------------------
@@ -34,6 +45,7 @@ public class RouteServiceImpl implements RouteService {
     private final RouteRepository routeRepository;
     private final RouteIdGenerator routeIdGenerator;
     private final ZoneClient zoneClient;
+    private final AssignmentClient assignmentClient;
 
     /**
      * Creates a new route if the zone exists and name is unique in zone.
@@ -106,6 +118,13 @@ public class RouteServiceImpl implements RouteService {
         Route route = routeRepository.findById(routeId)
                 .orElseThrow(() -> new RouteNotFoundException(routeId));
 
+        List<String> assignmentIds = assignmentClient.getAssignmentIdsByRouteId(routeId).getData();
+
+        if (assignmentIds != null && !assignmentIds.isEmpty()) {
+            log.error("Cannot delete route {}: assignments found: {}", routeId, assignmentIds);
+            throw new RouteDeletionException(routeId, assignmentIds);
+        }
+
         routeRepository.delete(route);
         log.info("Route deleted successfully: {}", routeId);
     }
@@ -134,6 +153,12 @@ public class RouteServiceImpl implements RouteService {
                 .stream()
                 .map(Route::getRouteId)
                 .collect(Collectors.toList());
+    }
+    @Override
+    public Page<RouteResponseDTO> getAllRoutes(Pageable pageable) {
+        log.info("Fetching paginated routes with {}", pageable);
+        return routeRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     private RouteResponseDTO mapToResponse(Route route) {

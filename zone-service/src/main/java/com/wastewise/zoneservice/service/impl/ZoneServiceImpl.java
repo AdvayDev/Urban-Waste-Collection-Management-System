@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,14 +24,6 @@ import com.wastewise.zoneservice.util.ZoneIdGenerator;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * ------------------------------------------------------------------------------
- * Service Implementation: ZoneServiceImpl
- * ------------------------------------------------------------------------------
- * Handles business logic for Zone operations.
- * Validates name uniqueness, prevents deletion with routes, and logs actions.
- * ------------------------------------------------------------------------------
- */
 @Service
 @RequiredArgsConstructor
 public class ZoneServiceImpl implements ZoneService {
@@ -101,12 +95,8 @@ public class ZoneServiceImpl implements ZoneService {
         logger.info("Deleting zone with ID: {}", zoneId);
 
         Zone zone = zoneRepository.findById(zoneId)
-                .orElseThrow(() -> {
-                    logger.error("Zone not found with ID: {}", zoneId);
-                    return new ZoneNotFoundException(zoneId);
-                });
+                .orElseThrow(() -> new ZoneNotFoundException(zoneId));
 
-        // ✅ Fix here: extract list from RestResponse
         List<String> assignedRoutes = routeClient.getRoutesByZoneId(zoneId).getData();
 
         if (assignedRoutes != null && !assignedRoutes.isEmpty()) {
@@ -118,12 +108,16 @@ public class ZoneServiceImpl implements ZoneService {
         logger.info("Zone deleted successfully with ID: {}", zoneId);
     }
 
-
-
     @Override
     public List<Zone> getAllZones() {
-        logger.info("Fetching all zones");
+        logger.info("Fetching all zones (non-paginated)");
         return zoneRepository.findAll();
+    }
+
+    @Override
+    public Page<Zone> getAllZones(Pageable pageable) {
+        logger.info("Fetching zones - pageable: {}", pageable);
+        return zoneRepository.findAll(pageable);
     }
 
     @Override
@@ -138,7 +132,7 @@ public class ZoneServiceImpl implements ZoneService {
         logger.info("Checking existence of zone with ID: {}", zoneId);
         return zoneRepository.existsByZoneId(zoneId);
     }
-    
+
     @Override
     public List<ZoneNameAndIdResponse> getAllZoneNamesAndIds() {
         logger.info("Fetching all zone IDs and names only");

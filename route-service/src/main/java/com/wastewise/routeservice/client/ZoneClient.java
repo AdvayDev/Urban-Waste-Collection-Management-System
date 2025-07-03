@@ -1,4 +1,4 @@
-package com.wastewise.routeservice.feign;
+package com.wastewise.routeservice.client;
 
 import com.wastewise.routeservice.payload.RestResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -8,7 +8,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 /**
  * Feign client for communicating with the Zone Service.
  */
-@FeignClient(name = "zone-service")
+@FeignClient(
+        name = "zone-service",
+        configuration = com.wastewise.routeservice.config.FeignClientConfig.class,
+        fallback = ZoneClientFallback.class
+)
+
 public interface ZoneClient {
 
     /**

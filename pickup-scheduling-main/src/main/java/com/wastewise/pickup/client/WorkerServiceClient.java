@@ -14,8 +14,8 @@ public interface WorkerServiceClient {
 //    List<WorkerDto> getAllWorkers(); //WorkerInfoDTO on worker-management module
 
     @GetMapping("/workers/{id}")
-    Boolean checkWorkerExists(@PathVariable String id);
+    Boolean checkWorkerExists(@PathVariable("id") String id);
 
     @PatchMapping("/status/{workerId}")
-    String updateWorkerStatus(@PathVariable String id, @RequestBody WorkerStatus status);
+    String updateWorkerStatus(@PathVariable("workerId") String workerId, @RequestBody WorkerStatus status);
 }

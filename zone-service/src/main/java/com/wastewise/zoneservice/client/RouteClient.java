@@ -10,7 +10,11 @@ import java.util.List;
 /**
  * Feign client to communicate with Route Service for fetching routes assigned to a zone.
  */
-@FeignClient(name = "ROUTE-SERVICE", fallback = RouteClientFallback.class)
+@FeignClient(
+        name = "ROUTE-SERVICE",
+        configuration = com.wastewise.zoneservice.config.FeignClientConfig.class,
+        fallback = RouteClientFallback.class
+)
 public interface RouteClient {
 
     /**
