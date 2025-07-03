@@ -13,9 +13,9 @@ public interface WorkerServiceClient {
 //    @GetMapping("/wastewise/admin/workers/ids")
 //    List<WorkerDto> getAllWorkers(); //WorkerInfoDTO on worker-management module
 
-    @GetMapping("/workers/{id}")
+    @GetMapping("/internal/exists")
     Boolean checkWorkerExists(@PathVariable("id") String id);
 
-    @PatchMapping("/status/{workerId}")
-    String updateWorkerStatus(@PathVariable("workerId") String workerId, @RequestBody WorkerStatus status);
+    @PatchMapping("/internal/status")
+    String updateWorkerStatus(@RequestBody WorkerStatusUpdateDto dto);
 }
