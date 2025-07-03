@@ -1,5 +1,6 @@
 package com.wastewise.pickup.dto;
 
+import com.wastewise.pickup.model.enums.VehicleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,5 +13,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VehicleStatusUpdateDto {
     private String vehicleId; // ID of the vehicle (e.g., "PT001")
-    private String status;    // Expected values: "OCCUPIED" or "AVAILABLE"
+    private VehicleStatus status;    // Expected values: "OCCUPIED" or "AVAILABLE"
 }
