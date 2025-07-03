@@ -1,5 +1,7 @@
 package com.wastewise.assignmentservice.service.impl;
 
+import com.wastewise.assignmentservice.client.VehicleClient;
+
 import com.wastewise.assignmentservice.dto.AssignmentDTO;
 import com.wastewise.assignmentservice.entity.Assignment;
 import com.wastewise.assignmentservice.exception.DuplicateAssignmentException;
@@ -7,6 +9,8 @@ import com.wastewise.assignmentservice.exception.ResourceNotFoundException;
 import com.wastewise.assignmentservice.repository.AssignmentRepository;
 import com.wastewise.assignmentservice.service.AssignmentService;
 import com.wastewise.assignmentservice.utility.IdGenerator;
+import com.wastewise.assignmentservice.enums.VehicleStatus;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -23,7 +27,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final AssignmentRepository repository;
     private final ModelMapper modelMapper;
     private final IdGenerator idGenerator;
-
+/*
 
     @Override
     public AssignmentDTO createAssignment(AssignmentDTO dto) {
@@ -37,6 +41,35 @@ public class AssignmentServiceImpl implements AssignmentService {
         assignment.setAssignmentId(idGenerator.generateAssignmentId());
         Assignment saved = repository.save(assignment);
         log.info("Created assignment with ID: {}", saved.getAssignmentId());
+        return modelMapper.map(saved, AssignmentDTO.class);
+    }
+*/
+
+private final VehicleClient vehicleClient;
+
+    public AssignmentDTO createAssignment(AssignmentDTO dto) {
+        // Prevent duplicate vehicle-route assignment
+        boolean exists = repository.existsByVehicleIdAndRouteId(dto.getVehicleId(), dto.getRouteId());
+        if (exists) {
+            throw new DuplicateAssignmentException("This vehicle is already assigned to the selected route.");
+        }
+
+        Assignment assignment = modelMapper.map(dto, Assignment.class);
+        assignment.setAssignmentId(idGenerator.generateAssignmentId());
+        Assignment saved = repository.save(assignment);
+        log.info("Created assignment with ID: {}", saved.getAssignmentId());
+
+        // Update vehicle status to UNAVAILABLE
+
+        log.info("Calling Vehicle Service to update status for vehicle ID: {}", dto.getVehicleId());
+        try {
+            vehicleClient.updateVehicleStatus(dto.getVehicleId(), VehicleStatus.UNAVAILABLE);
+            log.info("Vehicle status updated to UNAVAILABLE for vehicle ID: {}", dto.getVehicleId());
+        } catch (Exception e) {
+            log.error("Failed to update vehicle status for vehicle ID: {}", dto.getVehicleId(), e);
+            // Optional: throw a custom exception or handle fallback logic
+        }
+
         return modelMapper.map(saved, AssignmentDTO.class);
     }
 

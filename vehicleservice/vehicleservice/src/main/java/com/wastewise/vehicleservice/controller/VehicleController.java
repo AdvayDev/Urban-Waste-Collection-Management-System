@@ -81,6 +81,7 @@ public class VehicleController {
     @PutMapping("/{id}")
     public ResponseEntity<String> updateVehicle(@PathVariable String id, @RequestBody VehicleDTO dto) {
         log.info("PUT /wastewise/admin/vehicle-assignments/{}", id);
+
         vehicleService.updateVehicle(id, dto);
         return ResponseEntity.ok("Vehicle updated successfully.");
     }
@@ -135,9 +136,16 @@ public class VehicleController {
         return vehicleService.checkVehicleExists(id);
     }
 
-    @PutMapping("/internal/status")
-    public void updateVehicleStatus( @RequestBody VehicleStatusDTO dto){
-        log.info("Updating the status of vehicle with id {}", dto.getVehicleId());
-        vehicleService.updateVehicleStatus(dto);
-    }
+//    @PutMapping("/internal/status")
+//    public void updateVehicleStatus( @RequestBody VehicleStatusDTO dto){
+//        log.info("Updating the status of vehicle with id {}", dto.getVehicleId());
+//        vehicleService.updateVehicleStatus(dto);
+//    }
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
+    @PutMapping("/status/{id}")
+    public void updateVehicleStatus(@PathVariable String id, @RequestBody VehicleStatus status){
+        log.info("Updating the status of vehicle with id {}", id);
+        vehicleService.updateVehicleStatus(id, status);
+        log.info("Updated status of vehicle id {} sucessfully",id);
+}
 }

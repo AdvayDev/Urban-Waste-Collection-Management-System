@@ -1,7 +1,6 @@
 package com.wastewise.vehicleservice.service.impl;
 
 import com.wastewise.vehicleservice.dto.VehicleDTO;
-import com.wastewise.vehicleservice.dto.VehicleStatusDTO;
 import com.wastewise.vehicleservice.entity.Vehicle;
 import com.wastewise.vehicleservice.enums.VehicleStatus;
 import com.wastewise.vehicleservice.enums.VehicleType;
@@ -89,10 +88,11 @@ public class VehicleServiceImpl implements VehicleService {
         return vehicleRepository.existsById(id);
     }
 
-    public void updateVehicleStatus(VehicleStatusDTO dto){
-        Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
-                .orElseThrow(() -> new ResourceNotFoundException("Vehicle with id "+ dto.getVehicleId() + " does not exist"));
-        vehicle.setStatus(dto.getStatus());
+    public void updateVehicleStatus(String id, VehicleStatus status){
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle with id "+ id + " does not exist"));
+        System.out.println("reacehed the updatevehiclestatus ");
+        vehicle.setStatus(status);
         vehicleRepository.save(vehicle);
     }
 }

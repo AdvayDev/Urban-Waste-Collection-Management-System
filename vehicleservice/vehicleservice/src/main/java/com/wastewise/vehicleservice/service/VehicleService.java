@@ -1,7 +1,6 @@
 package com.wastewise.vehicleservice.service;
 
 import com.wastewise.vehicleservice.dto.VehicleDTO;
-import com.wastewise.vehicleservice.dto.VehicleStatusDTO;
 import com.wastewise.vehicleservice.enums.VehicleStatus;
 import org.springframework.data.domain.Page;
 
@@ -25,5 +24,6 @@ public interface VehicleService {
 
     boolean checkVehicleExists(String id);
 
-    void updateVehicleStatus(VehicleStatusDTO dto);
+    void updateVehicleStatus(String id, VehicleStatus status);
+
 }
