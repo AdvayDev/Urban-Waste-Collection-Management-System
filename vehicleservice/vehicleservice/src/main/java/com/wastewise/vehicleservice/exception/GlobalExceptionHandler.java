@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * Global exception handler for the Vehicle Service module.
  * Provides consistent and meaningful error responses for domain-specific and general exceptions.
  */
-@ControllerAdvice
+@RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 

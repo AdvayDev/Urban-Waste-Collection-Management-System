@@ -1,6 +1,7 @@
 package com.wastewise.vehicleservice.controller;
 
 import com.wastewise.vehicleservice.dto.VehicleDTO;
+import com.wastewise.vehicleservice.dto.VehicleStatusDTO;
 import com.wastewise.vehicleservice.enums.VehicleType;
 import com.wastewise.vehicleservice.enums.VehicleStatus;
 import com.wastewise.vehicleservice.service.VehicleService;
@@ -128,16 +129,15 @@ public class VehicleController {
     }
 
     @PreAuthorize("hasRole('SCHEDULER')")
-    @GetMapping("/exists/{id}")
-    public boolean checkVehicleExists(@PathVariable String id){
+    @GetMapping("/internal/exists")
+    public boolean checkVehicleExists(@RequestBody String id){
         log.info("Checking if vehicle with id {} exists or not",id);
         return vehicleService.checkVehicleExists(id);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
-    @PutMapping("/status/{id}")
-    public void updateVehicleStatus(@PathVariable String id, @RequestBody VehicleStatus status){
-        log.info("Updating the status of vehicle with id {}", id);
-        vehicleService.updateVehicleStatus(id, status);
+    @PutMapping("/internal/status")
+    public void updateVehicleStatus( @RequestBody VehicleStatusDTO dto){
+        log.info("Updating the status of vehicle with id {}", dto.getVehicleId());
+        vehicleService.updateVehicleStatus(dto);
     }
 }

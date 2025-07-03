@@ -156,7 +156,8 @@ public class PickUpServiceImpl implements PickUpService {
         try {
             log.info("Notifying worker {} with status: {}", workerId, status);
 
-            workerServiceClient.updateWorkerStatus(workerId,status);
+            WorkerStatusUpdateDto dto = new WorkerStatusUpdateDto(workerId, status);
+            workerServiceClient.changeWorkerStatus(dto);
 
             log.info("Worker {} successfully notified with status: {}", workerId, status);
 
@@ -174,7 +175,8 @@ public class PickUpServiceImpl implements PickUpService {
         try {
             log.info("Notifying vehicle {} with status: {}", vehicleId, status);
 
-            vehicleServiceClient.updateVehicleStatus(vehicleId,status);
+            VehicleStatusUpdateDto dto = new VehicleStatusUpdateDto(vehicleId,status);
+            vehicleServiceClient.updateVehicleStatus(dto);
 
             log.info("Vehicle {} successfully notified with status: {}", vehicleId, status);
 
