@@ -19,6 +19,8 @@ public class WasteLogStartRequestDTO {
     @Pattern(regexp = "^(RT|PT)\\d{3}$", message = "Invalid Vehicle ID format. Must be like RT123 or PT123.")
     private String vehicleId;
 
+
+    //remove workerId
     @NotBlank(message = "Worker ID cannot be empty.")
     @Pattern(regexp = "^W\\d{3}$", message = "Invalid Worker ID format. Must be like W456.")
     private String workerId;

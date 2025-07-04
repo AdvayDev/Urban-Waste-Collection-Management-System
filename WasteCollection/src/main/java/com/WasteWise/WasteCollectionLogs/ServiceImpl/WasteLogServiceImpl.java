@@ -68,7 +68,7 @@ public class WasteLogServiceImpl {
      * @param request The DTO containing information to start a waste collection log (worker ID, zone ID, vehicle ID).
      * @return A WasteLogResponseDto with the ID of the newly created log and a success message.
      */
-    public WasteLogResponseDTO startCollection(WasteLogStartRequestDTO request) { 
+    public WasteLogResponseDTO startCollection(WasteLogStartRequestDTO request) {
     	 logger.info("Attempting to start new collection log for workerId={}, zoneId={}, vehicleId={}",
                  request.getWorkerId(), request.getZoneId(), request.getVehicleId());
       
