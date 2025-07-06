@@ -111,7 +111,7 @@ public class RouteController {
      *
      * @return List of route responses
      */
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','SCHEDULER')")
     @GetMapping("/list")
     public ResponseEntity<RestResponse<Object>> getAllRoutes(
             @RequestParam(defaultValue = "0") int page,
