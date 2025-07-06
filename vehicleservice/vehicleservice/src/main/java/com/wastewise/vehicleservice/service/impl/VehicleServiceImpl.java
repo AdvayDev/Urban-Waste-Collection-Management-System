@@ -34,6 +34,8 @@ public class VehicleServiceImpl implements VehicleService {
         // Generate vehicle ID based on type
         String vehicleId = idGenerator.generateVehicleId(dto.getType().getDisplayName());
         vehicle.setVehicleId(vehicleId);
+        vehicle.setCreatedBy("W001");
+        vehicle.setUpdatedBy("W001");
         vehicle.setCreatedAt(LocalDateTime.now());
         vehicle.setUpdatedAt(LocalDateTime.now());
 
@@ -62,6 +64,7 @@ public class VehicleServiceImpl implements VehicleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with ID: " + id));
 
         modelMapper.map(dto, existing); // Update fields
+        existing.setUpdatedBy("W001");
         existing.setUpdatedAt(LocalDateTime.now());
 
         vehicleRepository.save(existing);
@@ -93,6 +96,7 @@ public class VehicleServiceImpl implements VehicleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle with id "+ id + " does not exist"));
         System.out.println("reacehed the updatevehiclestatus ");
         vehicle.setStatus(status);
+        vehicle.setUpdatedBy("W001");
         vehicleRepository.save(vehicle);
     }
 }
