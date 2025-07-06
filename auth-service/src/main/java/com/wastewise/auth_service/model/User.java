@@ -33,4 +33,10 @@ public class User {
 
     @LastModifiedDate
     private LocalDateTime updatedDate;
+
+    public User(String workerId, String password, Role role){
+        this.workerId=workerId;
+        this.password=password;
+        this.role=role;
+    }
 }
