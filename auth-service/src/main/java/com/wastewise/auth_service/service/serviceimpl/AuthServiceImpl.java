@@ -37,6 +37,13 @@ public class AuthServiceImpl implements AuthService {
         this.roleRepository = roleRepository;
     }
 
+    /**
+     * Method to handle user login.
+     * Validates the worker ID and password, and generates a JWT token if valid.
+     *
+     * @param dto LoginRequestDTO containing worker ID and password.
+     * @return LoginResponseDTO with JWT token and role name.
+     */
     public LoginResponseDTO login(LoginRequestDTO dto){
         Optional<User> userOpt = userRepository.findByWorkerId(dto.getWorkerId());
 
@@ -57,6 +64,12 @@ public class AuthServiceImpl implements AuthService {
         return new LoginResponseDTO(token, user.getRole().getRoleName());
     }
 
+    /**
+     * Method to register a new worker.
+     * Validates if the worker ID already exists and assigns a role to the worker.
+     *
+     * @param dto RegisterWorkerDTO containing worker ID and role name.
+     */
     public void registerWorker(RegisterWorkerDTO dto){
         if(userRepository.existsById(dto.getWorkerId())){
             throw new WorkerAlreadyExistsException("Worker with id "+ dto.getWorkerId() + " already exists");
@@ -76,7 +89,12 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
     }
 
-
+    /**
+     * Method to reset the password of a worker.
+     * Validates the worker ID and updates the password if valid.
+     *
+     * @param dto PasswordResetDTO containing worker ID and new password.
+     */
     public void resetPassword(PasswordResetDTO dto) {
         User user = userRepository.findById(dto.getWorkerId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -86,6 +104,13 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
     }
 
+    /**
+     * Method to validate a JWT token.
+     * Parses the token and retrieves the role from the claims.
+     *
+     * @param token JWT token to validate.
+     * @return LoginResponseDTO with the token and role.
+     */
     public LoginResponseDTO validateToken(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey("256-bit-secret-key-to-generate-the-encoded-message") // Use your actual secret key

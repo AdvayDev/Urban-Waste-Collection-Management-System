@@ -15,4 +15,6 @@ import java.util.Optional;
 public interface PickUpRepository extends JpaRepository<PickUp, String> {
 
     Optional<PickUp> findFirstByOrderByIdDesc();
+
+    Optional<PickUp> findByWorker1IdOrWorker2Id(String id, String id1);
 }

@@ -39,4 +39,6 @@ public interface PickUpService {
     PickUpDto getPickUpById(String pickUpId);
 
     String updatePickup(String id, CreatePickUpDto dto);
+
+    PickUpDto getPickupInfoByWorkerId(String id);
 }

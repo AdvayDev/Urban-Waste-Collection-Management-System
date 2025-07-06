@@ -240,6 +240,34 @@ public class PickUpServiceImpl implements PickUpService {
         return "Updated pickup with Id "+ id;
 
     }
+
+    /**
+     * Retrieves the pickup information for a worker by their ID.
+     *
+     * @param id the worker ID
+     * @return a PickUpDto containing the pickup information
+     */
+    public PickUpDto getPickupInfoByWorkerId(String id){
+        log.info("Fetching pickup info for worker ID: {}", id);
+
+        // Find the PickUp by worker ID
+        PickUp pickUp = repository.findByWorker1IdOrWorker2Id(id, id)
+                .orElseThrow(() -> new PickUpNotFoundException("No pickup found for worker ID: " + id));
+
+        PickUpDto dto = new PickUpDto();
+        dto.setId(pickUp.getId());
+        dto.setZoneId(pickUp.getZoneId());
+        dto.setTimeSlotStart(pickUp.getTimeSlotStart());
+        dto.setTimeSlotEnd(pickUp.getTimeSlotEnd());
+        dto.setFrequency(pickUp.getFrequency());
+        dto.setLocationName(pickUp.getLocationName());
+        dto.setVehicleId(pickUp.getVehicleId());
+        dto.setWorker1Id(pickUp.getWorker1Id());
+        dto.setWorker2Id(pickUp.getWorker2Id());
+        dto.setStatus(pickUp.getStatus());
+        log.info("Fetched pickup info for worker ID {}: {}", id, dto);
+        return dto;
+    }
 }
 
 /**

@@ -118,10 +118,15 @@ public class PickUpController {
      * @param id workerId of worker
      * @return dto that consist of pickup information such as pickup location, zone, vehicle, time slot, frequency
      *
-     * Add
-     * @PreAuthorize("hasRole('SANITARY_WORKER')")
-     * @GetMapping("/pickupinfo/{id}")
-     */
+     * */
+     @PreAuthorize("hasRole('SANITARY_WORKER')")
+     @GetMapping("/pickupinfo/{id}")
+     public ResponseEntity<PickUpDto> getPickupInfoByWorkerId(@PathVariable String id) {
+         log.info("GET /wastewise/scheduler/pickups/pickupinfo/{}, fetching for worker dashboard", id);
+         PickUpDto dto = pickUpService.getPickupInfoByWorkerId(id);
+         log.debug("Fetched Pickup Info for Worker ID {}: {}", id, dto);
+         return ResponseEntity.ok(dto);
+     }
 
     /**
      * Accessed By: Pickup Scheduler
