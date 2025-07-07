@@ -77,6 +77,8 @@ public class WasteLogServiceImpl {
         wasteLog.setZoneId(request.getZoneId());
         wasteLog.setVehicleId(request.getVehicleId());
         wasteLog.setWorkerId(request.getWorkerId());
+        wasteLog.setCreatedBy(request.getWorkerId());
+        wasteLog.setUpdatedBy(request.getWorkerId());
         wasteLog.setCollectionStartTime(LocalDateTime.now());
         wasteLog.setCreatedDate(LocalDateTime.now());
 
@@ -114,6 +116,7 @@ public class WasteLogServiceImpl {
 
         wasteLog.setCollectionEndTime(currentEndTime);
         wasteLog.setWeightCollected(request.getWeightCollected());
+        wasteLog.setUpdatedBy(request.getWorkerId());
         wasteLog.setUpdatedDate(LocalDateTime.now());
 
         wasteLogRepository.save(wasteLog);
