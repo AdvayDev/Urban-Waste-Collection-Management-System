@@ -167,6 +167,10 @@ public class WorkerServiceImpl implements WorkerService {
             throw new ContactInformationUsedException("Contact email is already being used by another worker");
         }
 
+        if(!worker.getRoleId().equals(dto.getRoleId())){
+            throw new IllegalStateException("Worker's role cannot be changed");
+        }
+
         log.info("updating details of the worker with id {}",id);
         workerMapper.updateWorkerFromDTO(dto, worker);
         WorkerStatus status = WorkerStatus.valueOf(dto.getWorkerStatus());
