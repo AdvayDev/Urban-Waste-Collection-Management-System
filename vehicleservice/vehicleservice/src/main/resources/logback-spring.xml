@@ -9,10 +9,10 @@
 
     <!-- File Appender with Rolling Policy -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/zone-service.log</file>
+        <file>logs/vehicle-service.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>logs/zone-service.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/vehicle-service.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -27,7 +27,7 @@
     </root>
 
     <!-- Package-specific logging level -->
-    <logger name="com.wastewise.zoneservice" level="INFO" additivity="false">
+    <logger name="com.wastewise.vehicleservice" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
     </logger>
