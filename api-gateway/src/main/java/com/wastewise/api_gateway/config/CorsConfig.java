@@ -1,5 +1,4 @@
-// src/main/java/com/wastewise/api_gateway/config/CorsConfig.java
-package com.wastewise.api_gateway.config; // Adjust package as per your project structure
+package com.wastewise.api_gateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
